@@ -30,7 +30,7 @@
   html,body{
     margin:0; padding:0; background:var(--bg); color:var(--text);
     font-family:var(--font-body);
-    width:100%; max-width:100%; overflow-x:hidden;
+    width:100%; max-width:100%;
   }
   body{
     background-image:
@@ -141,7 +141,8 @@
 
   /* ---------- comparison table ---------- */
   .compare{ margin-top:20px; }
-  table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px; }
+  table{ width:100%; min-width:480px; border-collapse:collapse; font-size:12.5px; }
   thead th{
     text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
     color:var(--text-faint); padding:8px 10px; border-bottom:1px solid var(--border); font-weight:500;
@@ -362,17 +363,19 @@
 
       <div class="panel compare" style="margin-top:20px;">
         <p class="panel-title">Codec comparison — video only, at current resolution &amp; frame rate</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Codec</th>
-              <th class="num">Mbit/s</th>
-              <th class="num">MByte/s</th>
-              <th class="num">GB/hr</th>
-            </tr>
-          </thead>
-          <tbody id="compareBody"></tbody>
-        </table>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Codec</th>
+                <th class="num">Mbit/s</th>
+                <th class="num">MByte/s</th>
+                <th class="num">GB/hr</th>
+              </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
