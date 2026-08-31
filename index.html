@@ -416,12 +416,12 @@ const CODECS = [
   { group:'DNxHR', id:'dnxhr_hq', name:'DNxHR HQ (8-bit)', type:'mezz', bpp:3.346 },
   { group:'DNxHR', id:'dnxhr_hqx', name:'DNxHR HQX (10/12-bit)', type:'mezz', bpp:3.346 },
   { group:'DNxHR', id:'dnxhr_444', name:'DNxHR 444 (12-bit RGB)', type:'mezz', bpp:8.478, approx:true },
-  { group:'XAVC', id:'xavc_i_c100', name:'XAVC-Intra Class 100 (HD/2K, 10-bit 4:2:2)', type:'mezz', bpp:1.677, hint:'Class 100 is Sony\u2019s spec at 2048\u00d71080 (2K DCI). Pick that resolution for exact figures \u2014 1920\u00d71080 reads ~7% lower.' },
-  { group:'XAVC', id:'xavc_i_c300', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD). Pick that resolution for exact figures \u2014 4096\u00d72160 DCI reads ~6% low.' },
-  { group:'XAVC', id:'xavc_i_c480', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD). Pick that resolution for exact figures \u2014 4096\u00d72160 DCI reads ~6% low.' },
-  { group:'XAVC', id:'xavc_l_hd10', name:'XAVC-L HD (Long GOP, 10-bit 4:2:2)', type:'mezz', bpp:0.805, approx:true },
-  { group:'XAVC', id:'xavc_l_hd8', name:'XAVC-L HD (Long GOP, 8-bit 4:2:0)', type:'mezz', bpp:0.563, approx:true },
-  { group:'XAVC', id:'xavc_l_4k', name:'XAVC-L 4K / QFHD (Long GOP, 8-bit 4:2:0)', type:'mezz', bpp:0.402, approx:true },
+  { group:'XAVC', id:'xavc_i_c100', name:'XAVC-Intra Class 100 (HD/2K, 10-bit 4:2:2)', type:'mezz', bpp:1.677, resRange:[0,2300000], hint:'Class 100 is Sony\u2019s spec at 2048\u00d71080 (2K DCI). Pick that resolution for exact figures \u2014 1920\u00d71080 reads ~7% lower.' },
+  { group:'XAVC', id:'xavc_i_c300', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, resRange:[3000000,10000000], hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD). Pick that resolution for exact figures \u2014 4096\u00d72160 DCI reads ~6% low.' },
+  { group:'XAVC', id:'xavc_i_c480', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, resRange:[3000000,10000000], hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD). Pick that resolution for exact figures \u2014 4096\u00d72160 DCI reads ~6% low.' },
+  { group:'XAVC', id:'xavc_l_hd10', name:'XAVC-L HD (Long GOP, 10-bit 4:2:2)', type:'mezz', bpp:0.805, resRange:[0,2300000], approx:true },
+  { group:'XAVC', id:'xavc_l_hd8', name:'XAVC-L HD (Long GOP, 8-bit 4:2:0)', type:'mezz', bpp:0.563, resRange:[0,2300000], approx:true },
+  { group:'XAVC', id:'xavc_l_4k', name:'XAVC-L 4K / QFHD (Long GOP, 8-bit 4:2:0)', type:'mezz', bpp:0.402, resRange:[3000000,10000000], approx:true },
   { group:'RAW', id:'arriraw', name:'ARRIRAW (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
   { group:'RAW', id:'redcode', name:'REDCODE RAW', type:'raw', bitDepth:16, ratio:8, presets:[3,5,8,12,18] },
   { group:'RAW', id:'braw', name:'Blackmagic RAW', type:'raw', bitDepth:12, ratio:5, presets:[3,5,8,12] },
@@ -435,18 +435,20 @@ const CODECS = [
   { group:'Sony X-OCN', id:'xocn_st', name:'Sony X-OCN ST', type:'mezz', bpp:3.098, approx:true },
   { group:'Sony X-OCN', id:'xocn_xt', name:'Sony X-OCN XT', type:'mezz', bpp:4.425, approx:true },
   { group:'Canon', id:'craw_light', name:'Canon Cinema RAW Light', type:'raw', bitDepth:12, ratio:2.65, presets:[2,2.65,3.5] },
-  { group:'Canon', id:'xfavc_i', name:'Canon XF-AVC Intra (4:2:2 10-bit)', type:'mezz', bpp:1.965, approx:true },
-  { group:'Canon', id:'xfavc_l', name:'Canon XF-AVC Long GOP (4:2:0 8-bit)', type:'mezz', bpp:0.375, approx:true },
+  { group:'Canon', id:'xfavc_i', name:'Canon XF-AVC Intra 4K/UHD (4:2:2 10-bit)', type:'mezz', bpp:1.965, resRange:[3000000,10000000], approx:true },
+  { group:'Canon', id:'xfavc_i_hd', name:'Canon XF-AVC Intra HD (4:2:2 10-bit)', type:'mezz', bpp:2.848, resRange:[0,2300000], approx:true },
+  { group:'Canon', id:'xfavc_l', name:'Canon XF-AVC Long GOP (4:2:0 8-bit)', type:'mezz', bpp:0.375, resRange:[0,2300000], approx:true },
   { group:'RAW', id:'prores_raw', name:'ProRes RAW', type:'raw', bitDepth:12, ratio:3, presets:[2,3,4], ditOnly:true },
   { group:'RAW', id:'prores_raw_hq', name:'ProRes RAW HQ', type:'raw', bitDepth:12, ratio:2, presets:[1.5,2,2.5], ditOnly:true },
   { group:'RAW', id:'cinedng_16', name:'CinemaDNG (16-bit, uncompressed)', type:'raw', bitDepth:16, ratio:1, ratioLocked:true, ditOnly:true },
   { group:'GoPro', id:'gopro_h265', name:'GoPro H.265 (HEVC, standard bitrate)', type:'mezz', bpp:0.136, approx:true, ditOnly:true },
   { group:'GoPro', id:'gopro_mission_h265', name:'GoPro Mission H.265 (GP-Log2, standard bitrate)', type:'mezz', bpp:0.121, approx:true, ditOnly:true },
   { group:'DJI', id:'dji_osmo_h265', name:'DJI H.265 (Osmo, standard bitrate)', type:'mezz', bpp:0.261, approx:true, ditOnly:true },
-  { group:'AVC-Intra', id:'avc_intra_4k422', name:'AVC-Intra 4K-422 / All-I 400 (10-bit 4:2:2)', type:'mezz', bpp:1.507, approx:true },
-  { group:'Long GOP', id:'panasonic_longgop150', name:'Panasonic LongGOP 150 (10-bit 4:2:2)', type:'mezz', bpp:0.565, approx:true },
-  { group:'XAVC H', id:'xavc_h_i_hq', name:'XAVC H-Intra HQ (8K, H.265)', type:'mezz', bpp:1.206, approx:true },
-  { group:'XAVC H', id:'xavc_h_i_sq', name:'XAVC H-Intra SQ (8K, H.265)', type:'mezz', bpp:0.804, approx:true },
+  { group:'AVC-Intra', id:'avc_intra_4k422', name:'AVC-Intra 4K-422 / All-I 400 (10-bit 4:2:2)', type:'mezz', bpp:1.507, resRange:[3000000,10000000], approx:true },
+  { group:'AVC-Intra', id:'avc_intra100', name:'AVC-Intra 100 (HD, 10-bit 4:2:2)', type:'mezz', bpp:1.609, resRange:[0,2300000] },
+  { group:'Long GOP', id:'panasonic_longgop150', name:'Panasonic LongGOP 150 (10-bit 4:2:2)', type:'mezz', bpp:0.565, resRange:[3000000,10000000], approx:true },
+  { group:'XAVC H', id:'xavc_h_i_hq', name:'XAVC H-Intra HQ (8K, H.265)', type:'mezz', bpp:1.206, resRange:[30000000,60000000], approx:true },
+  { group:'XAVC H', id:'xavc_h_i_sq', name:'XAVC H-Intra SQ (8K, H.265)', type:'mezz', bpp:0.804, resRange:[30000000,60000000], approx:true },
 ];
 
 const CAMERAS = [
@@ -529,7 +531,7 @@ const CAMERAS = [
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'Canon', model:'EOS C300 Mark III', codecs:['craw_light','xfavc_i','xfavc_l'],
+  { brand:'Canon', model:'EOS C300 Mark III', codecs:['craw_light','xfavc_i','xfavc_i_hd','xfavc_l'],
     resolutions:[
       { name:'5.9K FF — 5952×3140', w:5952, h:3140 },
       { name:'4K DCI — 4096×2160', w:4096, h:2160 },
@@ -537,7 +539,7 @@ const CAMERAS = [
       { name:'2K — 2048×1080', w:2048, h:1080 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'Canon', model:'EOS C500 Mark II', codecs:['craw_light','xfavc_i','xfavc_l'],
+  { brand:'Canon', model:'EOS C500 Mark II', codecs:['craw_light','xfavc_i','xfavc_i_hd','xfavc_l'],
     resolutions:[
       { name:'5.9K FF — 5952×3140', w:5952, h:3140 },
       { name:'4K DCI — 4096×2160', w:4096, h:2160 },
@@ -584,14 +586,14 @@ const CAMERAS = [
       { name:'8K 16:9 — 7680×4320', w:7680, h:4320 },
       { name:'8K Open Gate 4:3 — 7680×5760', w:7680, h:5760 },
     ] },
-  { brand:'Panasonic', model:'VariCam LT', codecs:['avc_intra_4k422','prores_4444xq','prores_4444','prores_hq','prores_422','prores_lt'],
+  { brand:'Panasonic', model:'VariCam LT', codecs:['avc_intra_4k422','avc_intra100','prores_4444xq','prores_4444','prores_hq','prores_422','prores_lt'],
     resolutions:[
       { name:'4K DCI — 4096×2160', w:4096, h:2160 },
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'2K — 2048×1080', w:2048, h:1080 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'Panasonic', model:'EVA1', codecs:['avc_intra_4k422','panasonic_longgop150'],
+  { brand:'Panasonic', model:'EVA1', codecs:['avc_intra_4k422','avc_intra100','panasonic_longgop150'],
     resolutions:[
       { name:'HD — 1920×1080', w:1920, h:1080 },
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
@@ -689,8 +691,17 @@ function populateCameraModels(){
   populateCameraCodecsAndRes();
 }
 
-function resolutionsForCamera(cam){
-  return [...cam.resolutions].sort((a,b)=>(a.w*a.h)-(b.w*b.h));
+function resolutionsForCamera(cam, codecId){
+  const codec = codecId ? CODECS.find(c=>c.id===codecId) : null;
+  let list = cam.resolutions;
+  if(codec && codec.resRange){
+    const [min,max] = codec.resRange;
+    const filtered = list.filter(r => { const px = r.w*r.h; return px >= min && px <= max; });
+    // Defensive fallback: if a resRange somehow excludes every resolution this camera has
+    // (e.g. data entry mismatch), show the full list rather than an empty dropdown.
+    if(filtered.length) list = filtered;
+  }
+  return [...list].sort((a,b)=>(a.w*a.h)-(b.w*b.h));
 }
 
 function populateCameraCodecsAndRes(){
@@ -702,12 +713,26 @@ function populateCameraCodecsAndRes(){
     opt.value = id; opt.textContent = c.name + (c.approx ? ' (approx.)' : '');
     camCodecSel.appendChild(opt);
   });
+  populateCameraResolutions();
+}
+
+function populateCameraResolutions(){
+  const cam = getCamera();
+  const previousValue = camResSel.value;
+  const previousRes = resolutionsForCamera(cam, camResSel.dataset.lastCodec)[parseInt(previousValue)];
   camResSel.innerHTML = '';
-  resolutionsForCamera(cam).forEach((r,i)=>{
+  const opts = resolutionsForCamera(cam, camCodecSel.value);
+  opts.forEach((r,i)=>{
     const opt = document.createElement('option');
     opt.value = i; opt.textContent = r.name;
     camResSel.appendChild(opt);
   });
+  // Try to keep the same physical resolution selected across a codec switch, if it's still valid.
+  if(previousRes){
+    const matchIdx = opts.findIndex(r=>r.w===previousRes.w && r.h===previousRes.h);
+    camResSel.value = matchIdx >= 0 ? matchIdx : 0;
+  }
+  camResSel.dataset.lastCodec = camCodecSel.value;
 }
 
 camBrandSel.value = CAMERAS[0].brand;
@@ -715,7 +740,7 @@ populateCameraModels();
 
 camBrandSel.addEventListener('change', ()=>{ populateCameraModels(); render(); });
 camModelSel.addEventListener('change', ()=>{ populateCameraCodecsAndRes(); render(); });
-camCodecSel.addEventListener('change', render);
+camCodecSel.addEventListener('change', ()=>{ populateCameraResolutions(); render(); });
 camResSel.addEventListener('change', render);
 camFpsSel.addEventListener('change', render);
 document.getElementById('camCustomFps').addEventListener('input', render);
@@ -749,7 +774,7 @@ function getCodec(){
 function getResolution(){
   if(currentMode === 'dit'){
     const cam = getCamera();
-    const opts = resolutionsForCamera(cam);
+    const opts = resolutionsForCamera(cam, camCodecSel.value);
     const r = opts[parseInt(camResSel.value)] || opts[0];
     return { w:r.w, h:r.h };
   }
