@@ -30,7 +30,7 @@
   html,body{
     margin:0; padding:0; background:var(--bg); color:var(--text);
     font-family:var(--font-body);
-    width:100%; max-width:100%;
+    width:100%; max-width:100%; overflow-x:hidden;
   }
   body{
     background-image:
@@ -142,13 +142,13 @@
   /* ---------- comparison table ---------- */
   .compare{ margin-top:20px; }
   .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px; }
-  table{ width:100%; min-width:480px; border-collapse:collapse; font-size:12.5px; }
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; }
   thead th{
     text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--text-faint); padding:8px 10px; border-bottom:1px solid var(--border); font-weight:500;
+    color:var(--text-faint); padding:8px 10px; border-bottom:1px solid var(--border); font-weight:500; white-space:nowrap;
   }
   thead th.num, tbody td.num{ text-align:right; }
-  tbody td{ padding:8px 10px; border-bottom:1px solid var(--border-soft); font-family:var(--font-mono); color:var(--text-dim); }
+  tbody td{ padding:8px 10px; border-bottom:1px solid var(--border-soft); font-family:var(--font-mono); color:var(--text-dim); white-space:nowrap; }
   tbody td.name{ font-family:var(--font-body); color:var(--text); font-weight:500; }
   tbody tr.selected{ background:rgba(255,118,74,0.07); }
   tbody tr.selected td{ color:var(--text); }
@@ -156,6 +156,21 @@
   tbody tr:hover{ background:rgba(255,255,255,0.02); }
   .group-tag{ display:inline-block; font-size:9.5px; font-family:var(--font-mono); color:var(--text-faint); border:1px solid var(--border); border-radius:3px; padding:1px 5px; margin-right:7px; vertical-align:1px; }
   .live-tag{ display:inline-block; font-size:9.5px; font-family:var(--font-mono); color:var(--amber); border:1px solid var(--amber-dim); border-radius:3px; padding:1px 5px; margin-left:7px; vertical-align:1px; cursor:help; }
+
+  /* Below this width, the table can't fit four columns legibly on one line even scrolled,
+     so it switches to a stacked card layout that fits the fixed viewport with no horizontal scroll. */
+  @media (max-width:560px){
+    .table-scroll{ overflow-x:visible; margin:0; padding:0; }
+    table{ display:block; width:100%; }
+    thead{ display:none; }
+    tbody{ display:block; }
+    tbody tr{ display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 14px; padding:10px 0; border-bottom:1px solid var(--border-soft); }
+    tbody tr.selected{ border-color:var(--amber-dim); }
+    tbody td{ display:inline; padding:0; border:none; white-space:normal; }
+    tbody td.name{ width:100%; margin-bottom:2px; }
+    tbody td.num{ font-size:11.5px; }
+    tbody td.num::before{ content:attr(data-label) ' '; color:var(--text-faint); font-size:9.5px; text-transform:uppercase; letter-spacing:0.04em; }
+  }
 
   footer{ margin-top:26px; font-size:11px; color:var(--text-faint); line-height:1.7; }
   footer b{ color:var(--text-dim); }
@@ -824,9 +839,9 @@ function renderCompare(w,h,fps,selectedId,liveBitDepth,liveRatio,codecList,showL
     const isLiveRaw = showLiveTag && c.id === selectedId && c.type === 'raw' && liveBitDepth != null;
     const liveTag = isLiveRaw ? '<span class="live-tag" title="Using your current bit depth / compression ratio settings, not this codec\'s default">live settings</span>' : '';
     tr.innerHTML = `<td class="name"><span class="group-tag">${c.group}</span>${c.name}${liveTag}</td>
-      <td class="num">${fmt(mbps,2)}</td>
-      <td class="num">${fmt(mBps,2)}</td>
-      <td class="num">${fmt(gbHr,2)}</td>`;
+      <td class="num" data-label="Mbit/s">${fmt(mbps,2)}</td>
+      <td class="num" data-label="MByte/s">${fmt(mBps,2)}</td>
+      <td class="num" data-label="GB/hr">${fmt(gbHr,2)}</td>`;
     body.appendChild(tr);
   });
 }
