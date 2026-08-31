@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capture Data Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0D10;
+    --panel:#14171C;
+    --panel-2:#171B21;
+    --border:#262B33;
+    --border-soft:#1D2129;
+    --text:#E8EAED;
+    --text-dim:#8A919C;
+    --text-faint:#565D68;
+    --amber:#FF764A;
+    --amber-dim:#8A4530;
+    --green:#73FFC5;
+    --green-dim:#1F5C3B;
+    --red:#FF4433;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+    --font-body:'Inter', sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:var(--font-body);
+    width:100%; max-width:100%; overflow-x:hidden;
+  }
+  body{
+    background-image:
+      linear-gradient(var(--border-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-attachment: fixed;
+    background-color: var(--bg);
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:36px 24px 64px; }
+
+  /* ---------- header ---------- */
+  header{ display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:28px; flex-wrap:wrap; }
+  .eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; letter-spacing:0.14em; color:var(--text-dim); text-transform:uppercase; margin-bottom:10px; }
+  .rec-dot{ width:8px; height:8px; border-radius:50%; background:var(--red); box-shadow:0 0 8px var(--red); animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .mode-switch{ display:inline-flex; gap:2px; padding:3px; background:var(--panel-2); border:1px solid var(--border); border-radius:20px; margin-bottom:12px; }
+  .mode-tab{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; padding:7px 16px; border-radius:16px; border:none; background:transparent; color:var(--text-dim); cursor:pointer; display:flex; align-items:center; gap:7px; transition:background .15s, color .15s; }
+  .mode-tab:hover{ color:var(--text); }
+  .mode-tab.active{ background:var(--amber); color:#241206; font-weight:600; }
+  .mode-tab .rec-dot{ width:6px; height:6px; }
+  .mode-tab.active .rec-dot{ background:#241206; box-shadow:none; animation:none; }
+  h1{ font-family:var(--font-display); font-weight:600; font-size:30px; margin:0; letter-spacing:-0.01em; }
+  h1 span{ color:var(--text-dim); font-weight:400; }
+  .subhead{ font-size:13px; color:var(--text-dim); margin-top:6px; max-width:520px; line-height:1.5; }
+  .slate{ font-family:var(--font-mono); font-size:11px; color:var(--text-faint); text-align:right; line-height:1.7; }
+  .slate b{ color:var(--text-dim); font-weight:500; }
+
+  /* ---------- layout ---------- */
+  .grid{ display:grid; grid-template-columns: 380px 1fr; gap:20px; align-items:start; min-width:0; }
+  @media (max-width: 880px){ .grid{ grid-template-columns: 1fr; } }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:22px;
+    position:relative; min-width:0;
+  }
+  .panel-title{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--amber); margin:0 0 16px; display:flex; align-items:center; gap:8px; }
+  .panel-title::after{ content:''; flex:1; height:1px; background:var(--border); }
+
+  /* corner brackets - viewfinder motif */
+  .bracket{ position:relative; }
+  .bracket::before, .bracket::after{
+    content:''; position:absolute; width:14px; height:14px; pointer-events:none;
+  }
+  .bracket::before{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); }
+  .bracket::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); }
+
+  .field{ margin-bottom:16px; min-width:0; }
+  .field:last-child{ margin-bottom:0; }
+  label{ display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px; font-weight:500; }
+  .row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; min-width:0; }
+  .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; min-width:0; }
+
+  select, input[type="number"], input[type="text"]{
+    width:100%; min-width:0; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    font-family:var(--font-body); font-size:13.5px; padding:9px 10px; border-radius:4px;
+    outline:none; appearance:none; -webkit-appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A919C' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 10px center; background-size:14px;
+    padding-right:30px;
+  }
+  select:focus, input:focus{ border-color:var(--amber); }
+  input[type="number"]{ font-family:var(--font-mono); }
+
+  .hint{ font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.5; }
+  .divider{ height:1px; background:var(--border); margin:18px 0; }
+  .subgroup-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-faint); margin:0 0 10px; }
+
+  .chip-row{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .chip{
+    font-family:var(--font-mono); font-size:11px; padding:5px 10px; border-radius:20px;
+    border:1px solid var(--border); color:var(--text-dim); background:var(--panel-2); cursor:pointer;
+    transition:border-color .15s, color .15s;
+  }
+  .chip:hover{ border-color:var(--amber-dim); color:var(--text); }
+  .chip.active{ border-color:var(--amber); color:var(--amber); }
+
+  /* ---------- readout ---------- */
+  .readout{
+    background:linear-gradient(180deg, #12151A, #0E1013);
+    border:1px solid var(--border); border-radius:6px; padding:26px 28px;
+  }
+  .readout-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; flex-wrap:wrap; gap:10px; }
+  .readout-label{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); }
+  .readout-codec{ font-family:var(--font-mono); font-size:11px; color:var(--amber); text-align:right; }
+  .readout-main{ display:flex; align-items:baseline; gap:14px; margin:10px 0 2px; flex-wrap:wrap; }
+  .readout-number{ font-family:var(--font-mono); font-weight:700; font-size:56px; color:var(--green); text-shadow:0 0 18px rgba(115,255,197,0.35); line-height:1; letter-spacing:-0.01em; }
+  .readout-unit{ font-family:var(--font-mono); font-size:16px; color:var(--text-dim); }
+  .readout-sub{ font-family:var(--font-mono); font-size:18px; color:var(--text-dim); margin-top:4px; }
+  .readout-sub b{ color:var(--text); font-weight:600; }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); margin-top:22px; border-radius:6px; overflow:hidden; border:1px solid var(--border); }
+  @media (max-width:640px){ .stat-grid{ grid-template-columns:repeat(2,1fr); } }
+  .stat{ background:var(--panel); padding:14px 16px; }
+  .stat-label{ font-size:11px; color:var(--text-dim); margin-bottom:6px; }
+  .stat-value{ font-family:var(--font-mono); font-size:18px; font-weight:600; color:var(--text); }
+  .stat-value small{ font-family:var(--font-mono); font-size:11px; color:var(--text-dim); font-weight:400; margin-left:3px; }
+
+  .storage-band{
+    margin-top:18px; padding:16px 18px; border:1px solid var(--amber-dim); border-radius:6px;
+    background:rgba(255,118,74,0.05); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  .storage-band .label{ font-size:12px; color:var(--text-dim); }
+  .storage-band .value{ font-family:var(--font-mono); font-size:24px; font-weight:700; color:var(--amber); }
+  .storage-band .value small{ font-size:13px; font-weight:500; color:var(--text-dim); margin-left:4px; }
+
+  /* ---------- comparison table ---------- */
+  .compare{ margin-top:20px; }
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  thead th{
+    text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-faint); padding:8px 10px; border-bottom:1px solid var(--border); font-weight:500;
+  }
+  thead th.num, tbody td.num{ text-align:right; }
+  tbody td{ padding:8px 10px; border-bottom:1px solid var(--border-soft); font-family:var(--font-mono); color:var(--text-dim); }
+  tbody td.name{ font-family:var(--font-body); color:var(--text); font-weight:500; }
+  tbody tr.selected{ background:rgba(255,118,74,0.07); }
+  tbody tr.selected td{ color:var(--text); }
+  tbody tr.selected td.name{ color:var(--amber); }
+  tbody tr:hover{ background:rgba(255,255,255,0.02); }
+  .group-tag{ display:inline-block; font-size:9.5px; font-family:var(--font-mono); color:var(--text-faint); border:1px solid var(--border); border-radius:3px; padding:1px 5px; margin-right:7px; vertical-align:1px; }
+  .live-tag{ display:inline-block; font-size:9.5px; font-family:var(--font-mono); color:var(--amber); border:1px solid var(--amber-dim); border-radius:3px; padding:1px 5px; margin-left:7px; vertical-align:1px; cursor:help; }
+
+  footer{ margin-top:26px; font-size:11px; color:var(--text-faint); line-height:1.7; }
+  footer b{ color:var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="mode-switch" role="tablist">
+        <button class="mode-tab active" id="modeStreamBtn" type="button"><span class="rec-dot"></span>Stream Record</button>
+        <button class="mode-tab" id="modeDitBtn" type="button">DIT / Data Wrangle</button>
+      </div>
+      <h1>CodecCalc <span>/ codec &amp; storage calculator</span></h1>
+      <div class="subhead" id="subhead">Estimate per-stream data rates, audio load, and total storage for common on-set acquisition codecs, then compare across formats.</div>
+    </div>
+    <div class="slate" id="slate">
+      <div>Created by CMB Media Services Ltd</div>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ===================== CONFIG PANEL ===================== -->
+    <div class="panel bracket">
+      <p class="panel-title">Configuration</p>
+
+      <div id="streamFields">
+        <div class="field">
+          <label for="codec">Codec / profile</label>
+          <select id="codec"></select>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="resolution">Resolution</label>
+            <select id="resolution"></select>
+          </div>
+          <div class="field">
+            <label for="framerate">Frame rate</label>
+            <select id="framerate"></select>
+          </div>
+        </div>
+
+        <div class="row" id="customResRow" style="display:none;">
+          <div class="field">
+            <label for="customW">Width (px)</label>
+            <input type="number" id="customW" value="3840" min="1">
+          </div>
+          <div class="field">
+            <label for="customH">Height (px)</label>
+            <input type="number" id="customH" value="2160" min="1">
+          </div>
+        </div>
+
+        <div class="field" id="customFpsField" style="display:none;">
+          <label for="customFps">Custom frame rate (fps)</label>
+          <input type="number" id="customFps" value="24" min="1" step="0.001">
+        </div>
+      </div>
+
+      <div id="ditFields" style="display:none;">
+        <div class="row">
+          <div class="field">
+            <label for="camBrand">Camera brand</label>
+            <select id="camBrand"></select>
+          </div>
+          <div class="field">
+            <label for="camModel">Camera model</label>
+            <select id="camModel"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="camCodec">Codec / recording format</label>
+          <select id="camCodec"></select>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="camResolution">Resolution</label>
+            <select id="camResolution"></select>
+          </div>
+          <div class="field">
+            <label for="camFramerate">Frame rate</label>
+            <select id="camFramerate"></select>
+          </div>
+        </div>
+        <div class="field" id="camCustomFpsField" style="display:none;">
+          <label for="camCustomFps">Custom frame rate (fps)</label>
+          <input type="number" id="camCustomFps" value="24" min="1" step="0.001">
+        </div>
+        <div class="hint" id="camHint" style="margin-top:2px;"></div>
+      </div>
+
+      <div id="rawControls" style="display:none;">
+        <div class="divider"></div>
+        <p class="subgroup-label">Raw sensor parameters</p>
+        <div class="row">
+          <div class="field">
+            <label for="bitDepth">Bit depth</label>
+            <select id="bitDepth">
+              <option value="10">10-bit</option>
+              <option value="12">12-bit</option>
+              <option value="14">14-bit</option>
+              <option value="16">16-bit</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ratio">Compression ratio</label>
+            <input type="number" id="ratio" value="1" min="1" step="0.1">
+          </div>
+        </div>
+        <div class="chip-row" id="ratioChips"></div>
+        <div class="hint" id="rawHint"></div>
+      </div>
+
+      <div class="divider"></div>
+      <p class="subgroup-label">Audio (linear PCM)</p>
+      <div class="row3">
+        <div class="field">
+          <label for="channels">Channels</label>
+          <select id="channels">
+            <option value="0">None</option>
+            <option value="1">Mono</option>
+            <option value="2" selected>Stereo</option>
+            <option value="4">4ch</option>
+            <option value="8">8ch</option>
+            <option value="16">16ch</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sampleRate">Sample rate</label>
+          <select id="sampleRate">
+            <option value="48000" selected>48 kHz</option>
+            <option value="96000">96 kHz</option>
+            <option value="44100">44.1 kHz</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="audioBits">Bit depth</label>
+          <select id="audioBits">
+            <option value="16">16-bit</option>
+            <option value="24" selected>24-bit</option>
+            <option value="32">32-bit</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <p class="subgroup-label">Setup</p>
+      <div class="row">
+        <div class="field">
+          <label for="streams" style="min-height:29px; display:block;">Streams / cameras</label>
+          <input type="number" id="streams" value="1" min="1" step="1">
+        </div>
+        <div class="field">
+          <label for="duration" style="min-height:29px; display:block;">Record duration</label>
+          <div class="row" style="grid-template-columns:1fr 1fr; gap:6px;">
+            <input type="number" id="durH" value="1" min="0" step="1" title="hours">
+            <input type="number" id="durM" value="0" min="0" max="59" step="1" title="minutes">
+          </div>
+          <div class="hint">hours / minutes, per camera</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== OUTPUT ===================== -->
+    <div>
+      <div class="readout bracket">
+        <div class="readout-top">
+          <div class="readout-label">Per-stream data rate</div>
+          <div class="readout-codec" id="readoutCodecLabel">—</div>
+        </div>
+        <div class="readout-main">
+          <span class="readout-number" id="mainNumber">0.0</span>
+          <span class="readout-unit">MB/s</span>
+        </div>
+        <div class="readout-sub" id="readoutSub">— Mb/s · — GB/hr per stream</div>
+        <div class="hint" id="codecHint" style="margin-top:8px;"></div>
+
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-label">Video only</div>
+            <div class="stat-value" id="statVideo">—<small>MB/s</small></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Audio only</div>
+            <div class="stat-value" id="statAudio">—<small>MB/s</small></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">All streams, combined</div>
+            <div class="stat-value" id="statAllStreams">—<small>MB/s</small></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">All streams, per hour</div>
+            <div class="stat-value" id="statPerHour">—<small>GB</small></div>
+          </div>
+        </div>
+
+        <div class="storage-band">
+          <div class="label">Storage needed for <span id="durationLabel">1h 0m</span> × <span id="streamLabel">1</span> stream(s)</div>
+          <div class="value" id="storageValue">— <small>GB</small></div>
+        </div>
+      </div>
+
+      <div class="panel compare" style="margin-top:20px;">
+        <p class="panel-title">Codec comparison — video only, at current resolution &amp; frame rate</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Codec</th>
+              <th class="num">Mbit/s</th>
+              <th class="num">MByte/s</th>
+              <th class="num">GB/hr</th>
+            </tr>
+          </thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <b>Notes on the numbers.</b> ProRes and DNxHR figures use Apple's and Avid's published target data rates (constant, resolution/fps-scaled). XAVC-Intra Class 100/300/480 figures are derived from Sony's official XAVC operating-point tables (Class defines a coded-frame-size budget, not a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K variants). XAVC-L figures come from Sony's Long GOP VBR ceilings, which don't scale as cleanly with resolution/fps as intra codecs do, so treat the XAVC-L rows as rough guides rather than exact per-frame-rate targets. Sony X-OCN (LT/ST/XT) figures are estimated from Sony's published size relationships between the three flavors and ProRes 4444, not from a direct per-resolution spec table — treat as approximate. Canon Cinema RAW Light uses a compression ratio derived from a single official Canon data point (1 Gbps at 4096×2160, 25p, 12-bit); XF-AVC figures are similarly derived from Canon's published Intra/Long-GOP bitrate table. ProRes RAW and ProRes RAW HQ use estimated compression ratios (Apple doesn't publish these directly) — adjust the ratio slider if you have camera-specific figures. GoPro's H.265 figure is based on its official 120 Mb/s standard-bitrate spec at 5.3K60, which GoPro states as a flat cap across its frame-rate range rather than one that scales per fps, so treat it as approximate at other resolutions/frame rates. DJI's Osmo H.265 figure works the same way, based on DJI's own 130 Mb/s spec at 4K. Uncompressed and RAW figures (ARRIRAW, REDCODE, Blackmagic RAW, CinemaDNG) are computed from sensor bit depth × pixel count × frame rate ÷ compression ratio — real-world RAW rates vary with image content, so treat these as planning estimates, not guarantees. H.264/H.265 rows are rough high-bitrate references for on-set proxy recording only, not camera-specific specs. In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes — high-frame-rate crop modes and windowed resolutions aren't included. Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB/TB (1 GB = 1000 MB), matching card and drive marketing capacities.
+  </footer>
+
+</div>
+
+<script>
+const CODECS = [
+  { group:'ProRes', id:'prores_proxy', name:'ProRes 422 Proxy', type:'mezz', bpp:0.724 },
+  { group:'ProRes', id:'prores_lt', name:'ProRes 422 LT', type:'mezz', bpp:1.641 },
+  { group:'ProRes', id:'prores_422', name:'ProRes 422', type:'mezz', bpp:2.365 },
+  { group:'ProRes', id:'prores_hq', name:'ProRes 422 HQ', type:'mezz', bpp:3.541 },
+  { group:'ProRes', id:'prores_4444', name:'ProRes 4444', type:'mezz', bpp:5.310 },
+  { group:'ProRes', id:'prores_4444xq', name:'ProRes 4444 XQ', type:'mezz', bpp:8.046 },
+  { group:'DNxHR', id:'dnxhr_lb', name:'DNxHR LB', type:'mezz', bpp:0.688 },
+  { group:'DNxHR', id:'dnxhr_sq', name:'DNxHR SQ', type:'mezz', bpp:2.215 },
+  { group:'DNxHR', id:'dnxhr_hq', name:'DNxHR HQ (8-bit)', type:'mezz', bpp:3.346 },
+  { group:'DNxHR', id:'dnxhr_hqx', name:'DNxHR HQX (10/12-bit)', type:'mezz', bpp:3.346 },
+  { group:'DNxHR', id:'dnxhr_444', name:'DNxHR 444 (12-bit RGB)', type:'mezz', bpp:8.478, approx:true },
+  { group:'XAVC', id:'xavc_i_c100', name:'XAVC-Intra Class 100 (HD/2K, 10-bit 4:2:2)', type:'mezz', bpp:1.677, hint:'Class 100 is Sony\u2019s spec at 2048\u00d71080 (2K DCI). Pick that resolution for exact figures \u2014 1920\u00d71080 reads ~7% lower.' },
+  { group:'XAVC', id:'xavc_i_c300', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD). Pick that resolution for exact figures \u2014 4096\u00d72160 DCI reads ~6% low.' },
+  { group:'XAVC', id:'xavc_i_c480', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD). Pick that resolution for exact figures \u2014 4096\u00d72160 DCI reads ~6% low.' },
+  { group:'XAVC', id:'xavc_l_hd10', name:'XAVC-L HD (Long GOP, 10-bit 4:2:2)', type:'mezz', bpp:0.805, approx:true },
+  { group:'XAVC', id:'xavc_l_hd8', name:'XAVC-L HD (Long GOP, 8-bit 4:2:0)', type:'mezz', bpp:0.563, approx:true },
+  { group:'XAVC', id:'xavc_l_4k', name:'XAVC-L 4K / QFHD (Long GOP, 8-bit 4:2:0)', type:'mezz', bpp:0.402, approx:true },
+  { group:'RAW', id:'arriraw', name:'ARRIRAW (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
+  { group:'RAW', id:'redcode', name:'REDCODE RAW', type:'raw', bitDepth:16, ratio:8, presets:[3,5,8,12,18] },
+  { group:'RAW', id:'braw', name:'Blackmagic RAW', type:'raw', bitDepth:12, ratio:5, presets:[3,5,8,12] },
+  { group:'RAW', id:'dng_lossless', name:'CinemaDNG (lossless comp.)', type:'raw', bitDepth:12, ratio:2, presets:[1.8,2,2.2] },
+  { group:'RAW', id:'dng_uncompressed', name:'CinemaDNG (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
+  { group:'Uncompressed', id:'uncomp_422', name:'Uncompressed 4:2:2 (10-bit)', type:'mezz', bpp:20 },
+  { group:'Uncompressed', id:'uncomp_444', name:'Uncompressed 4:4:4 RGB (10-bit)', type:'mezz', bpp:30 },
+  { group:'Proxy / delivery', id:'h264', name:'H.264 (high-bitrate proxy)', type:'mezz', bpp:0.15, approx:true },
+  { group:'Proxy / delivery', id:'h265', name:'H.265 / HEVC (high-bitrate proxy)', type:'mezz', bpp:0.08, approx:true },
+  { group:'Sony X-OCN', id:'xocn_lt', name:'Sony X-OCN LT', type:'mezz', bpp:1.770, approx:true },
+  { group:'Sony X-OCN', id:'xocn_st', name:'Sony X-OCN ST', type:'mezz', bpp:3.098, approx:true },
+  { group:'Sony X-OCN', id:'xocn_xt', name:'Sony X-OCN XT', type:'mezz', bpp:4.425, approx:true },
+  { group:'Canon', id:'craw_light', name:'Canon Cinema RAW Light', type:'raw', bitDepth:12, ratio:2.65, presets:[2,2.65,3.5] },
+  { group:'Canon', id:'xfavc_i', name:'Canon XF-AVC Intra (4:2:2 10-bit)', type:'mezz', bpp:1.965, approx:true },
+  { group:'Canon', id:'xfavc_l', name:'Canon XF-AVC Long GOP (4:2:0 8-bit)', type:'mezz', bpp:0.375, approx:true },
+  { group:'RAW', id:'prores_raw', name:'ProRes RAW', type:'raw', bitDepth:12, ratio:3, presets:[2,3,4], ditOnly:true },
+  { group:'RAW', id:'prores_raw_hq', name:'ProRes RAW HQ', type:'raw', bitDepth:12, ratio:2, presets:[1.5,2,2.5], ditOnly:true },
+  { group:'RAW', id:'cinedng_16', name:'CinemaDNG (16-bit, uncompressed)', type:'raw', bitDepth:16, ratio:1, ratioLocked:true, ditOnly:true },
+  { group:'GoPro', id:'gopro_h265', name:'GoPro H.265 (HEVC, standard bitrate)', type:'mezz', bpp:0.136, approx:true, ditOnly:true },
+  { group:'DJI', id:'dji_osmo_h265', name:'DJI H.265 (Osmo, standard bitrate)', type:'mezz', bpp:0.261, approx:true, ditOnly:true },
+];
+
+const CAMERAS = [
+  { brand:'ARRI', model:'Alexa 35', codecs:['arriraw','prores_4444xq','prores_4444','prores_hq','prores_422','prores_lt','prores_proxy'],
+    resolutions:[
+      { name:'4.6K Open Gate — 4608×3164', w:4608, h:3164 },
+      { name:'4K 16:9 — 4096×2304', w:4096, h:2304 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'3K 1:1 — 3072×3072', w:3072, h:3072 },
+      { name:'2K S16 — 2048×1152', w:2048, h:1152 },
+    ] },
+  { brand:'ARRI', model:'Alexa Mini LF', codecs:['arriraw','prores_4444xq','prores_4444','prores_hq','prores_422','prores_lt','prores_proxy'],
+    resolutions:[
+      { name:'4.5K LF Open Gate — 4448×3096', w:4448, h:3096 },
+      { name:'4K LF 16:9 — 4096×2304', w:4096, h:2304 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'2K — 2048×1152', w:2048, h:1152 },
+    ] },
+  { brand:'RED', model:'V-RAPTOR 8K VV', codecs:['redcode','prores_hq','prores_422','prores_lt'],
+    resolutions:[
+      { name:'8K VV 17:9 — 8192×4320', w:8192, h:4320 },
+      { name:'6K S35 17:9 — 6144×3240', w:6144, h:3240 },
+      { name:'4K — 4096×2160', w:4096, h:2160 },
+      { name:'2K — 2048×1080', w:2048, h:1080 },
+    ] },
+  { brand:'RED', model:'KOMODO-X', codecs:['redcode','prores_hq','prores_422','prores_lt'],
+    resolutions:[
+      { name:'6K S35 17:9 — 6144×3240', w:6144, h:3240 },
+      { name:'4K — 4096×2160', w:4096, h:2160 },
+      { name:'2K — 2048×1080', w:2048, h:1080 },
+    ] },
+  { brand:'Sony', model:'VENICE 2 (8K sensor)', codecs:['xocn_xt','xocn_st','xocn_lt','prores_4444','prores_hq'],
+    resolutions:[
+      { name:'8.6K 3:2 — 8640×5760', w:8640, h:5760 },
+      { name:'8.2K 17:9 — 8192×4320', w:8192, h:4320 },
+      { name:'4K 17:9 — 4096×2160', w:4096, h:2160 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+    ] },
+  { brand:'Sony', model:'FX6', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10'],
+    resolutions:[
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Sony', model:'FX3', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10'],
+    resolutions:[
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Sony', model:'FR7', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
+    resolutions:[
+      { name:'4K DCI — 4096×2160', w:4096, h:2160 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Sony', model:'A7S III', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10'],
+    resolutions:[
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Canon', model:'EOS C300 Mark III', codecs:['craw_light','xfavc_i','xfavc_l'],
+    resolutions:[
+      { name:'5.9K FF — 5952×3140', w:5952, h:3140 },
+      { name:'4K DCI — 4096×2160', w:4096, h:2160 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'2K — 2048×1080', w:2048, h:1080 },
+    ] },
+  { brand:'Canon', model:'EOS C500 Mark II', codecs:['craw_light','xfavc_i','xfavc_l'],
+    resolutions:[
+      { name:'5.9K FF — 5952×3140', w:5952, h:3140 },
+      { name:'4K DCI — 4096×2160', w:4096, h:2160 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+    ] },
+  { brand:'Blackmagic', model:'URSA Mini Pro 12K', codecs:['braw'],
+    resolutions:[
+      { name:'12K 3:2 — 12288×6480', w:12288, h:6480 },
+      { name:'8K 3:2 — 8192×4320', w:8192, h:4320 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+    ] },
+  { brand:'Blackmagic', model:'Pocket Cinema Camera 6K Pro', codecs:['braw'],
+    resolutions:[
+      { name:'6K 17:9 — 6144×3456', w:6144, h:3456 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+    ] },
+  { brand:'DJI', model:'Inspire 3 (Zenmuse X9-8K Air)', codecs:['prores_raw_hq','prores_raw','prores_hq','cinedng_16'],
+    resolutions:[
+      { name:'8K Full-Frame — 8192×4320', w:8192, h:4320 },
+      { name:'4K — 4096×2160', w:4096, h:2160 },
+    ] },
+  { brand:'DJI', model:'Osmo Pocket 3', codecs:['dji_osmo_h265'],
+    resolutions:[
+      { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'2.7K 16:9 — 2688×1512', w:2688, h:1512 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'GoPro', model:'HERO13 Black', codecs:['gopro_h265'],
+    resolutions:[
+      { name:'5.3K 16:9 — 5120×2880', w:5120, h:2880 },
+      { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'2.7K 16:9 — 2704×1520', w:2704, h:1520 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+];
+
+const RESOLUTIONS = [
+  { name:'HD 720p — 1280×720', w:1280, h:720 },
+  { name:'HD 1080p — 1920×1080', w:1920, h:1080 },
+  { name:'2K DCI — 2048×1080', w:2048, h:1080 },
+  { name:'2.7K — 2704×1520', w:2704, h:1520 },
+  { name:'UHD 4K — 3840×2160', w:3840, h:2160 },
+  { name:'4K DCI — 4096×2160', w:4096, h:2160 },
+  { name:'5K — 5120×2700', w:5120, h:2700 },
+  { name:'6K DCI — 6144×3240', w:6144, h:3240 },
+  { name:'8K UHD — 7680×4320', w:7680, h:4320 },
+  { name:'Custom', w:null, h:null },
+];
+
+const FRAMERATES = [23.976, 24, 25, 29.97, 30, 47.952, 48, 50, 59.94, 60, 100, 120, 'custom'];
+
+const codecSel = document.getElementById('codec');
+const groups = {};
+CODECS.forEach(c=>{
+  if(c.ditOnly) return;
+  if(!groups[c.group]){
+    groups[c.group] = document.createElement('optgroup');
+    groups[c.group].label = c.group;
+    codecSel.appendChild(groups[c.group]);
+  }
+  const opt = document.createElement('option');
+  opt.value = c.id;
+  opt.textContent = c.name + (c.approx ? ' (approx.)' : '');
+  groups[c.group].appendChild(opt);
+});
+codecSel.value = 'prores_hq';
+
+const resSel = document.getElementById('resolution');
+RESOLUTIONS.forEach((r,i)=>{
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = r.name;
+  resSel.appendChild(opt);
+});
+resSel.value = 4;
+
+const fpsSel = document.getElementById('framerate');
+FRAMERATES.forEach(f=>{
+  const opt = document.createElement('option');
+  opt.value = f;
+  opt.textContent = f === 'custom' ? 'Custom' : f + ' fps';
+  fpsSel.appendChild(opt);
+});
+fpsSel.value = 24;
+
+/* ---------- DIT / Data Wrangle: camera-driven selects ---------- */
+const camBrandSel = document.getElementById('camBrand');
+const camModelSel = document.getElementById('camModel');
+const camCodecSel = document.getElementById('camCodec');
+const camResSel = document.getElementById('camResolution');
+const camFpsSel = document.getElementById('camFramerate');
+
+[...new Set(CAMERAS.map(c=>c.brand))].sort((a,b)=>a.localeCompare(b)).forEach(b=>{
+  const opt = document.createElement('option');
+  opt.value = b; opt.textContent = b;
+  camBrandSel.appendChild(opt);
+});
+
+FRAMERATES.forEach(f=>{
+  const opt = document.createElement('option');
+  opt.value = f;
+  opt.textContent = f === 'custom' ? 'Custom' : f + ' fps';
+  camFpsSel.appendChild(opt);
+});
+camFpsSel.value = 24;
+
+function modelsForBrand(brand){
+  return CAMERAS.filter(c=>c.brand===brand).sort((a,b)=>a.model.localeCompare(b.model));
+}
+
+function getCamera(){
+  const models = modelsForBrand(camBrandSel.value);
+  return models[parseInt(camModelSel.value)] || models[0];
+}
+
+function populateCameraModels(){
+  camModelSel.innerHTML = '';
+  modelsForBrand(camBrandSel.value).forEach((m,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = m.model;
+    camModelSel.appendChild(opt);
+  });
+  camModelSel.value = 0;
+  populateCameraCodecsAndRes();
+}
+
+function resolutionsForCamera(cam){
+  return [...cam.resolutions].sort((a,b)=>(a.w*a.h)-(b.w*b.h));
+}
+
+function populateCameraCodecsAndRes(){
+  const cam = getCamera();
+  camCodecSel.innerHTML = '';
+  cam.codecs.forEach(id=>{
+    const c = CODECS.find(x=>x.id===id);
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = c.name + (c.approx ? ' (approx.)' : '');
+    camCodecSel.appendChild(opt);
+  });
+  camResSel.innerHTML = '';
+  resolutionsForCamera(cam).forEach((r,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = r.name;
+    camResSel.appendChild(opt);
+  });
+}
+
+camBrandSel.value = CAMERAS[0].brand;
+populateCameraModels();
+
+camBrandSel.addEventListener('change', ()=>{ populateCameraModels(); render(); });
+camModelSel.addEventListener('change', ()=>{ populateCameraCodecsAndRes(); render(); });
+camCodecSel.addEventListener('change', render);
+camResSel.addEventListener('change', render);
+camFpsSel.addEventListener('change', render);
+document.getElementById('camCustomFps').addEventListener('input', render);
+
+/* ---------- Mode switch ---------- */
+let currentMode = 'stream';
+const SUBHEADS = {
+  stream: 'Estimate per-stream data rates, audio load, and total storage for common on-set acquisition codecs, then compare across formats.',
+  dit: 'Pick a camera brand and model, then its native recording format: resolution, codec, and frame rate scoped to what that camera actually shoots.'
+};
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('modeStreamBtn').classList.toggle('active', mode==='stream');
+  document.getElementById('modeDitBtn').classList.toggle('active', mode==='dit');
+  document.getElementById('streamFields').style.display = mode==='stream' ? 'block' : 'none';
+  document.getElementById('ditFields').style.display = mode==='dit' ? 'block' : 'none';
+  document.getElementById('subhead').textContent = SUBHEADS[mode];
+  render();
+}
+document.getElementById('modeStreamBtn').addEventListener('click', ()=>setMode('stream'));
+document.getElementById('modeDitBtn').addEventListener('click', ()=>setMode('dit'));
+
+function getCodec(){
+  if(currentMode === 'dit'){
+    return CODECS.find(c=>c.id===camCodecSel.value);
+  }
+  return CODECS.find(c=>c.id===codecSel.value);
+}
+
+function getResolution(){
+  if(currentMode === 'dit'){
+    const cam = getCamera();
+    const opts = resolutionsForCamera(cam);
+    const r = opts[parseInt(camResSel.value)] || opts[0];
+    return { w:r.w, h:r.h };
+  }
+  const r = RESOLUTIONS[resSel.value];
+  if(r.w === null){
+    return { w: parseFloat(document.getElementById('customW').value)||0, h: parseFloat(document.getElementById('customH').value)||0 };
+  }
+  return { w:r.w, h:r.h };
+}
+
+function getFps(){
+  if(currentMode === 'dit'){
+    if(camFpsSel.value === 'custom'){
+      return parseFloat(document.getElementById('camCustomFps').value)||0;
+    }
+    return parseFloat(camFpsSel.value);
+  }
+  if(fpsSel.value === 'custom'){
+    return parseFloat(document.getElementById('customFps').value)||0;
+  }
+  return parseFloat(fpsSel.value);
+}
+
+function mezzMbps(bpp, w, h, fps){ return (w*h*fps*bpp)/1e6; }
+function rawMbps(bitDepth, ratio, w, h, fps){ return (w*h*fps*bitDepth/Math.max(ratio,0.001))/1e6; }
+
+function fmt(n, d=2){
+  if(!isFinite(n)) return '—';
+  return n.toLocaleString(undefined,{minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+let lastRawCodecId = null;
+function updateRawControlsVisibility(){
+  const c = getCodec();
+  const rawBox = document.getElementById('rawControls');
+  const ratioChips = document.getElementById('ratioChips');
+  const ratioInput = document.getElementById('ratio');
+  const bitDepthSel = document.getElementById('bitDepth');
+  const rawHint = document.getElementById('rawHint');
+  if(c.type === 'raw'){
+    rawBox.style.display = 'block';
+    if(c.id !== lastRawCodecId){
+      bitDepthSel.value = c.bitDepth;
+      ratioInput.value = c.ratio;
+      lastRawCodecId = c.id;
+    }
+    ratioInput.disabled = !!c.ratioLocked;
+    const currentRatio = parseFloat(ratioInput.value);
+    ratioChips.innerHTML = '';
+    if(c.presets){
+      c.presets.forEach(p=>{
+        const chip = document.createElement('span');
+        chip.className = 'chip' + (p===currentRatio ? ' active' : '');
+        chip.textContent = p + ':1';
+        chip.onclick = ()=>{ ratioInput.value = p; render(); };
+        ratioChips.appendChild(chip);
+      });
+    }
+    rawHint.textContent = c.ratioLocked
+      ? 'Uncompressed sensor readout — ratio fixed at 1:1.'
+      : 'Compression ratio is content-dependent (motion, detail, camera firmware). Treat as an estimate.';
+  } else {
+    rawBox.style.display = 'none';
+  }
+}
+
+function render(){
+  const codec = getCodec();
+  const { w, h } = getResolution();
+  const fps = getFps();
+  const channels = parseFloat(document.getElementById('channels').value);
+  const sampleRate = parseFloat(document.getElementById('sampleRate').value);
+  const audioBits = parseFloat(document.getElementById('audioBits').value);
+  const streams = Math.max(1, parseInt(document.getElementById('streams').value)||1);
+  const durH = parseFloat(document.getElementById('durH').value)||0;
+  const durM = parseFloat(document.getElementById('durM').value)||0;
+  const durationSeconds = durH*3600 + durM*60;
+
+  document.getElementById('customResRow').style.display = (currentMode==='stream' && RESOLUTIONS[resSel.value].w === null) ? 'grid' : 'none';
+  document.getElementById('customFpsField').style.display = (currentMode==='stream' && fpsSel.value === 'custom') ? 'block' : 'none';
+  document.getElementById('camCustomFpsField').style.display = (currentMode==='dit' && camFpsSel.value === 'custom') ? 'block' : 'none';
+  updateRawControlsVisibility();
+
+  let videoMbps;
+  if(codec.type === 'mezz'){
+    videoMbps = mezzMbps(codec.bpp, w, h, fps);
+  } else {
+    const bitDepth = parseFloat(document.getElementById('bitDepth').value);
+    const ratio = parseFloat(document.getElementById('ratio').value) || 1;
+    videoMbps = rawMbps(bitDepth, ratio, w, h, fps);
+  }
+  const videoMBps = videoMbps / 8;
+
+  const audioBytesPerSec = channels * sampleRate * (audioBits/8);
+  const audioMBps = audioBytesPerSec / 1e6;
+
+  const perStreamMBps = videoMBps + audioMBps;
+  const allStreamsMBps = perStreamMBps * streams;
+  const gbPerHourAll = allStreamsMBps * 3600 / 1000;
+  const storageGB = allStreamsMBps * durationSeconds / 1000;
+
+  const camPrefix = currentMode==='dit' ? (getCamera().brand.toUpperCase() + ' ' + getCamera().model.toUpperCase() + '  ·  ') : '';
+  document.getElementById('readoutCodecLabel').textContent = camPrefix + codec.name.toUpperCase() + '  ·  ' + w + '×' + h + '  ·  ' + fps + ' fps';
+  document.getElementById('mainNumber').textContent = fmt(perStreamMBps,2);
+  document.getElementById('readoutSub').innerHTML = fmt(videoMbps,2) + ' Mb/s video &middot; <b>' + fmt(perStreamMBps*3600/1000,2) + ' GB/hr</b> per stream (incl. audio)';
+  document.getElementById('codecHint').textContent = codec.hint || '';
+
+  document.getElementById('statVideo').innerHTML = fmt(videoMBps,2) + '<small>MB/s</small>';
+  document.getElementById('statAudio').innerHTML = fmt(audioMBps,2) + '<small>MB/s</small>';
+  document.getElementById('statAllStreams').innerHTML = fmt(allStreamsMBps,2) + '<small>MB/s</small>';
+  document.getElementById('statPerHour').innerHTML = fmt(gbPerHourAll,2) + '<small>GB</small>';
+
+  document.getElementById('durationLabel').textContent = durH + 'h ' + durM + 'm';
+  document.getElementById('streamLabel').textContent = streams;
+  if(storageGB >= 1000){
+    document.getElementById('storageValue').innerHTML = fmt(storageGB/1000,2) + ' <small>TB</small>';
+  } else {
+    document.getElementById('storageValue').innerHTML = fmt(storageGB,2) + ' <small>GB</small>';
+  }
+
+  const compareCodecs = currentMode==='dit'
+    ? getCamera().codecs.map(id=>CODECS.find(c=>c.id===id))
+    : CODECS.filter(c=>!c.ditOnly);
+  document.querySelector('.compare .panel-title').textContent = currentMode==='dit'
+    ? `Codec comparison — video only, ${getCamera().brand} ${getCamera().model} at current resolution & frame rate`
+    : 'Codec comparison — video only, at current resolution & frame rate';
+
+  renderCompare(w,h,fps,codec.id, codec.type==='raw' ? parseFloat(document.getElementById('bitDepth').value) : null, codec.type==='raw' ? (parseFloat(document.getElementById('ratio').value)||1) : null, compareCodecs, currentMode==='stream');
+}
+
+function renderCompare(w,h,fps,selectedId,liveBitDepth,liveRatio,codecList,showLiveTag){
+  const body = document.getElementById('compareBody');
+  body.innerHTML = '';
+  const rows = codecList.map(c=>{
+    const mbps = codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio);
+    return { c, mbps };
+  }).sort((a,b)=>a.mbps-b.mbps);
+
+  rows.forEach(({c,mbps})=>{
+    const tr = document.createElement('tr');
+    if(c.id === selectedId) tr.className = 'selected';
+    const mBps = mbps/8;
+    const gbHr = mBps*3600/1000;
+    const isLiveRaw = showLiveTag && c.id === selectedId && c.type === 'raw' && liveBitDepth != null;
+    const liveTag = isLiveRaw ? '<span class="live-tag" title="Using your current bit depth / compression ratio settings, not this codec\'s default">live settings</span>' : '';
+    tr.innerHTML = `<td class="name"><span class="group-tag">${c.group}</span>${c.name}${liveTag}</td>
+      <td class="num">${fmt(mbps,2)}</td>
+      <td class="num">${fmt(mBps,2)}</td>
+      <td class="num">${fmt(gbHr,2)}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio){
+  if(c.type === 'mezz') return mezzMbps(c.bpp,w,h,fps);
+  if(c.id === selectedId && liveBitDepth != null){
+    return rawMbps(liveBitDepth, liveRatio, w, h, fps);
+  }
+  return rawMbps(c.bitDepth, c.ratio, w, h, fps);
+}
+
+[codecSel, resSel, fpsSel, document.getElementById('customW'), document.getElementById('customH'),
+ document.getElementById('customFps'), document.getElementById('bitDepth'), document.getElementById('ratio'),
+ document.getElementById('channels'), document.getElementById('sampleRate'), document.getElementById('audioBits'),
+ document.getElementById('streams'), document.getElementById('durH'), document.getElementById('durM')
+].forEach(el=> el.addEventListener('input', render));
+
+render();
+</script>
+</body>
+</html>
