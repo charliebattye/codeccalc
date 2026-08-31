@@ -142,6 +142,8 @@
   /* ---------- comparison table ---------- */
   .compare{ margin-top:20px; }
   .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px; }
+  .table-scroll.v-capped{ max-height:520px; overflow-y:auto; }
+  .table-scroll.v-capped thead th{ position:sticky; top:0; background:var(--panel); z-index:1; }
   table{ width:100%; border-collapse:collapse; font-size:12.5px; }
   thead th{
     text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
@@ -378,7 +380,7 @@
 
       <div class="panel compare" style="margin-top:20px;">
         <p class="panel-title">Codec comparison — video only, at current resolution &amp; frame rate</p>
-        <div class="table-scroll">
+        <div class="table-scroll" id="tableScroll">
           <table>
             <thead>
               <tr>
@@ -677,6 +679,7 @@ function setMode(mode){
   document.getElementById('streamFields').style.display = mode==='stream' ? 'block' : 'none';
   document.getElementById('ditFields').style.display = mode==='dit' ? 'block' : 'none';
   document.getElementById('subhead').textContent = SUBHEADS[mode];
+  document.getElementById('tableScroll').classList.toggle('v-capped', mode==='stream');
   render();
 }
 document.getElementById('modeStreamBtn').addEventListener('click', ()=>setMode('stream'));
@@ -860,6 +863,7 @@ function codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio){
  document.getElementById('streams'), document.getElementById('durH'), document.getElementById('durM')
 ].forEach(el=> el.addEventListener('input', render));
 
+document.getElementById('tableScroll').classList.toggle('v-capped', currentMode==='stream');
 render();
 </script>
 </body>
