@@ -398,7 +398,7 @@
   </div>
 
   <footer>
-    <b>Notes on the numbers.</b> ProRes and DNxHR figures use Apple's and Avid's published target data rates (constant, resolution/fps-scaled). XAVC-Intra Class 100/300/480 figures are derived from Sony's official XAVC operating-point tables (Class defines a coded-frame-size budget, not a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K variants). XAVC-L figures come from Sony's Long GOP VBR ceilings, which don't scale as cleanly with resolution/fps as intra codecs do, so treat the XAVC-L rows as rough guides rather than exact per-frame-rate targets. Sony X-OCN (LT/ST/XT) figures are estimated from Sony's published size relationships between the three flavors and ProRes 4444, not from a direct per-resolution spec table — treat as approximate. Canon Cinema RAW Light uses a compression ratio derived from a single official Canon data point (1 Gbps at 4096×2160, 25p, 12-bit); XF-AVC figures are similarly derived from Canon's published Intra/Long-GOP bitrate table. ProRes RAW and ProRes RAW HQ use estimated compression ratios (Apple doesn't publish these directly) — adjust the ratio slider if you have camera-specific figures. GoPro's H.265 figure is based on its official 120 Mb/s standard-bitrate spec at 5.3K60, which GoPro states as a flat cap across its frame-rate range rather than one that scales per fps, so treat it as approximate at other resolutions/frame rates. DJI's Osmo H.265 figure works the same way, based on DJI's own 130 Mb/s spec at 4K. Uncompressed and RAW figures (ARRIRAW, REDCODE, Blackmagic RAW, CinemaDNG) are computed from sensor bit depth × pixel count × frame rate ÷ compression ratio — real-world RAW rates vary with image content, so treat these as planning estimates, not guarantees. H.264/H.265 rows are rough high-bitrate references for on-set proxy recording only, not camera-specific specs. In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes — high-frame-rate crop modes and windowed resolutions aren't included. Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB/TB (1 GB = 1000 MB), matching card and drive marketing capacities.
+    <b>Notes on the numbers.</b> ProRes and DNxHR figures use Apple's and Avid's published target data rates (constant, resolution/fps-scaled). XAVC-Intra Class 100/300/480 figures are derived from Sony's official XAVC operating-point tables (Class defines a coded-frame-size budget, not a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K variants). XAVC-L figures come from Sony's Long GOP VBR ceilings, which don't scale as cleanly with resolution/fps as intra codecs do, so treat the XAVC-L rows as rough guides rather than exact per-frame-rate targets. Sony X-OCN (LT/ST/XT) figures are estimated from Sony's published size relationships between the three flavors and ProRes 4444, not from a direct per-resolution spec table — treat as approximate. Canon Cinema RAW Light uses a compression ratio derived from a single official Canon data point (1 Gbps at 4096×2160, 25p, 12-bit); XF-AVC figures are similarly derived from Canon's published Intra/Long-GOP bitrate table. ProRes RAW and ProRes RAW HQ use estimated compression ratios (Apple doesn't publish these directly) — adjust the ratio slider if you have camera-specific figures. GoPro's H.265 figure is based on its official 120 Mb/s standard-bitrate spec at 5.3K60, which GoPro states as a flat cap across its frame-rate range rather than one that scales per fps, so treat it as approximate at other resolutions/frame rates. DJI's Osmo H.265 figure works the same way, based on DJI's own 130 Mb/s spec at 4K. Panasonic's AVC-Intra 4K-422 / All-I 400 figure is based on a Panasonic technical comparison stating both run "about 400 Mb/s" at 4K 30p (an earlier figure in the same document cites 320 Mb/s, so treat this as an approximate midpoint rather than an exact spec); LongGOP 150 uses Panasonic's own published 150 Mb/s cap. Sony's XAVC H-Intra HQ/SQ figures for the BURANO's 8K modes are derived from Sony's published 1200/800 Mb/s figures at 8K 30p. Uncompressed and RAW figures (ARRIRAW, REDCODE, Blackmagic RAW, CinemaDNG) are computed from sensor bit depth × pixel count × frame rate ÷ compression ratio — real-world RAW rates vary with image content, so treat these as planning estimates, not guarantees. H.264/H.265 rows are rough high-bitrate references for on-set proxy recording only, not camera-specific specs. In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes — high-frame-rate crop modes and windowed resolutions aren't included. Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB/TB (1 GB = 1000 MB), matching card and drive marketing capacities.
   </footer>
 
 </div>
@@ -442,6 +442,10 @@ const CODECS = [
   { group:'RAW', id:'cinedng_16', name:'CinemaDNG (16-bit, uncompressed)', type:'raw', bitDepth:16, ratio:1, ratioLocked:true, ditOnly:true },
   { group:'GoPro', id:'gopro_h265', name:'GoPro H.265 (HEVC, standard bitrate)', type:'mezz', bpp:0.136, approx:true, ditOnly:true },
   { group:'DJI', id:'dji_osmo_h265', name:'DJI H.265 (Osmo, standard bitrate)', type:'mezz', bpp:0.261, approx:true, ditOnly:true },
+  { group:'AVC-Intra', id:'avc_intra_4k422', name:'AVC-Intra 4K-422 / All-I 400 (10-bit 4:2:2)', type:'mezz', bpp:1.507, approx:true },
+  { group:'AVC-Intra', id:'panasonic_longgop150', name:'Panasonic LongGOP 150 (10-bit 4:2:2)', type:'mezz', bpp:0.565, approx:true },
+  { group:'XAVC H', id:'xavc_h_i_hq', name:'XAVC H-Intra HQ (8K, H.265)', type:'mezz', bpp:1.206, approx:true },
+  { group:'XAVC H', id:'xavc_h_i_sq', name:'XAVC H-Intra SQ (8K, H.265)', type:'mezz', bpp:0.804, approx:true },
 ];
 
 const CAMERAS = [
@@ -459,6 +463,12 @@ const CAMERAS = [
       { name:'4K LF 16:9 — 4096×2304', w:4096, h:2304 },
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'2K — 2048×1152', w:2048, h:1152 },
+    ] },
+  { brand:'ARRI', model:'Alexa Mini', codecs:['arriraw','prores_4444xq','prores_4444','prores_hq','prores_422','prores_lt','prores_proxy'],
+    resolutions:[
+      { name:'Open Gate 3.4K — 3424×2202', w:3424, h:2202 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
   { brand:'RED', model:'V-RAPTOR 8K VV', codecs:['redcode','prores_hq','prores_422','prores_lt'],
     resolutions:[
@@ -489,6 +499,18 @@ const CAMERAS = [
     resolutions:[
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Sony', model:'PXW-FS7 II', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
+    resolutions:[
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Sony', model:'BURANO', codecs:['xocn_lt','xavc_h_i_hq','xavc_h_i_sq','xavc_i_c300','xavc_l_4k'],
+    resolutions:[
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'6K Full-Frame Crop — 6052×3404', w:6052, h:3404 },
+      { name:'8.6K Full-Frame — 8640×5760', w:8640, h:5760 },
     ] },
   { brand:'Sony', model:'FR7', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
     resolutions:[
@@ -542,6 +564,19 @@ const CAMERAS = [
       { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'2.7K 16:9 — 2704×1520', w:2704, h:1520 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Panasonic', model:'VariCam LT', codecs:['avc_intra_4k422','prores_4444xq','prores_4444','prores_hq','prores_422','prores_lt'],
+    resolutions:[
+      { name:'4K DCI — 4096×2160', w:4096, h:2160 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'2K — 2048×1080', w:2048, h:1080 },
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+    ] },
+  { brand:'Panasonic', model:'EVA1', codecs:['avc_intra_4k422','panasonic_longgop150'],
+    resolutions:[
+      { name:'HD — 1920×1080', w:1920, h:1080 },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
+      { name:'4K DCI — 4096×2160', w:4096, h:2160 },
     ] },
 ];
 
