@@ -1,0 +1,11 @@
+# macOS Finder metadata. Not source, and it comes back the moment a folder
+# is opened, so it lands in unrelated commits if left untracked.
+.DS_Store
+
+# Manufacturer specification PDFs and datasheets, kept next to the work so the
+# figures in index.html can be checked against their sources.
+#
+# This repository is served by GitHub Pages, so anything committed here is
+# published at a public URL. Reference documents are other people's copyrighted
+# material and stay local.
+Codec Data/
