@@ -398,7 +398,7 @@
   </div>
 
   <footer>
-    <b>Notes on the numbers.</b> ProRes and DNxHR figures use Apple's and Avid's published target data rates (constant, resolution/fps-scaled). XAVC-Intra Class 100/300/480 figures are derived from Sony's official XAVC operating-point tables (Class defines a coded-frame-size budget, not a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K variants). XAVC-L figures come from Sony's Long GOP VBR ceilings, which don't scale as cleanly with resolution/fps as intra codecs do, so treat the XAVC-L rows as rough guides rather than exact per-frame-rate targets. Sony X-OCN (LT/ST/XT) figures are estimated from Sony's published size relationships between the three flavors and ProRes 4444, not from a direct per-resolution spec table — treat as approximate. Canon Cinema RAW Light uses a compression ratio derived from a single official Canon data point (1 Gbps at 4096×2160, 25p, 12-bit). XF-AVC Intra is derived from Canon's published bitrate table; XF-AVC Long GOP is averaged from two Canon data points that disagreed with each other by over 30% (35 Mb/s at 50p vs. 24 Mb/s at 25p, same resolution) — like XAVC-L, it's a Long-GOP codec whose real bitrate doesn't scale linearly with frame rate, so treat this one as the roughest estimate in the RAW/Long-GOP set. ProRes RAW and ProRes RAW HQ use estimated compression ratios (Apple doesn't publish these directly) — adjust the ratio slider if you have camera-specific figures. GoPro's H.265 figure is based on its official 120 Mb/s standard-bitrate spec at 5.3K60, which GoPro states as a flat cap across its frame-rate range rather than one that scales per fps, so treat it as approximate at other resolutions/frame rates. DJI's Osmo H.265 figure works the same way, based on DJI's own 130 Mb/s spec at 4K. Panasonic's AVC-Intra 4K-422 / All-I 400 figure is based on a Panasonic technical comparison stating both run "about 400 Mb/s" at 4K 30p (an earlier figure in the same document cites 320 Mb/s, so treat this as an approximate midpoint rather than an exact spec); LongGOP 150 uses Panasonic's own published 150 Mb/s cap — like XAVC-L, this is a Long-GOP codec, so its real-world bitrate doesn't scale as linearly with frame rate as the intra codecs above; the 150 Mb/s figure is most accurate near the frame rate Panasonic quotes it at rather than across the full range. Sony's XAVC H-Intra HQ/SQ figures for the BURANO's 8K modes are derived from Sony's published 1200/800 Mb/s figures at 8K 30p. The GoPro Mission's H.265 figure is based on GoPro's official 240 Mb/s standard-bitrate spec at 8K60 (a cap GoPro states was set to meet Netflix's published capture-bitrate requirement) — GoPro Labs firmware can push this higher, which isn't modeled here. Uncompressed and RAW figures (ARRIRAW, REDCODE, Blackmagic RAW, CinemaDNG) are computed from sensor bit depth × pixel count × frame rate ÷ compression ratio — real-world RAW rates vary with image content, so treat these as planning estimates, not guarantees. H.264/H.265 rows are rough high-bitrate references for on-set proxy recording only, not camera-specific specs. In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes — high-frame-rate crop modes and windowed resolutions aren't included. Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB/TB (1 GB = 1000 MB), matching card and drive marketing capacities.
+    <b>Notes on the numbers.</b> ProRes and DNxHR figures use Apple's and Avid's published target data rates (constant, resolution/fps-scaled). XAVC-Intra Class 100/300/480 figures are derived from Sony's official XAVC operating-point tables (Class defines a coded-frame-size budget, not a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K variants). XAVC-L figures come from Sony's Long GOP VBR ceilings, which don't scale as cleanly with resolution/fps as intra codecs do, so treat the XAVC-L rows as rough guides rather than exact per-frame-rate targets. Sony X-OCN (LT/ST/XT) figures were originally estimated from Sony's published size relationships between the three flavors and ProRes 4444. They have since been checked against Sony's own VENICE and VENICE 2 file size calculator across the 8.6K 3:2, 8.2K 17:9 and 6K 3:2 sensor modes, and agree to within 0.5–2.6% — the residual being container overhead that Sony's total-data-rate figures include and these video-only figures don't. Sony set the X-OCN rate by sensor mode rather than output raster, so 3840×2160 and 4096×2160 record at the same rate while this tool scales by pixel count; the wider raster reads about 7% high. Canon Cinema RAW Light uses a compression ratio derived from a single official Canon data point (1 Gbps at 4096×2160, 25p, 12-bit). XF-AVC Intra is derived from Canon's published bitrate table; XF-AVC Long GOP is averaged from two Canon data points that disagreed with each other by over 30% (35 Mb/s at 50p vs. 24 Mb/s at 25p, same resolution) — like XAVC-L, it's a Long-GOP codec whose real bitrate doesn't scale linearly with frame rate, so treat this one as the roughest estimate in the RAW/Long-GOP set. ProRes RAW and ProRes RAW HQ use estimated compression ratios (Apple doesn't publish these directly) — adjust the ratio slider if you have camera-specific figures. GoPro HERO13 Black figures are read from GoPro's own published SD card capacity table, converting each recording time on a 128 GB card into a bit rate, for both the Standard and High settings. They are per-mode figures rather than one bits-per-pixel value, because the camera's implied bits per pixel varies more than fivefold across its own modes: the encoder pins to a ceiling near 140 Mb/s at 5.3K60 and 4K120, and falls to about a third of that at 1080p30. Frame rates GoPro don't publish are interpolated between neighbouring published ones; anything outside that range reads as a dash rather than a scaled guess. GoPro state the HERO13's bit rate is highly variable with scene complexity, so treat these as static-scene estimates. DJI's Osmo Pocket 3 H.265 figure is still a single bits-per-pixel value scaled from DJI's own 130 Mb/s spec at 4K, because DJI publish no equivalent capacity table. It will read low at smaller rasters and lower frame rates for the same reason the GoPro entries once did — treat it as a rough estimate rather than a per-mode figure. Panasonic's AVC-Intra 4K-422 / All-I 400 figure is based on a Panasonic technical comparison stating both run "about 400 Mb/s" at 4K 30p (an earlier figure in the same document cites 320 Mb/s, so treat this as an approximate midpoint rather than an exact spec); LongGOP 150 uses Panasonic's own published 150 Mb/s cap — like XAVC-L, this is a Long-GOP codec, so its real-world bitrate doesn't scale as linearly with frame rate as the intra codecs above; the 150 Mb/s figure is most accurate near the frame rate Panasonic quotes it at rather than across the full range. Sony's XAVC H-Intra HQ/SQ figures for the BURANO's 8K modes are derived from Sony's published 1200/800 Mb/s figures at 8K 30p. GoPro MISSION 1 Pro figures come from GoPro's published 256 GB card capacity table, split into the camera's three settings. Max is GoPro's stated constant 240 Mb/s rather than a figure derived from that table: the table rounds every Max entry to “2Hrs”, which would imply 284 Mb/s, so the stated spec is the better source. High and Standard are converted from the published times, with 8K High held to GoPro's stated 160 Mb/s ceiling. Those times are quoted only to the nearest half hour, so the shortest durations carry roughly ±13% uncertainty; the derived High ceiling of 162.5 Mb/s agreeing with GoPro's stated 160 to within 1.6% is the main check that the conversion is sound. Modes GoPro mark N/A, such as Max below 480 fps at 1080p, read as a dash rather than a substituted figure. GoPro Labs firmware can exceed these caps, which isn't modelled here. Uncompressed and RAW figures (ARRIRAW, REDCODE, Blackmagic RAW, CinemaDNG) are computed from sensor bit depth × pixel count × frame rate ÷ compression ratio — real-world RAW rates vary with image content, so treat these as planning estimates, not guarantees. H.264/H.265 rows are rough high-bitrate references for on-set proxy recording only, not camera-specific specs. In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes — high-frame-rate crop modes and windowed resolutions aren't included. Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB/TB (1 GB = 1000 MB), matching card and drive marketing capacities.
   </footer>
 
 </div>
@@ -441,8 +441,36 @@ const CODECS = [
   { group:'RAW', id:'prores_raw', name:'ProRes RAW', type:'raw', bitDepth:12, ratio:3, presets:[2,3,4], ditOnly:true },
   { group:'RAW', id:'prores_raw_hq', name:'ProRes RAW HQ', type:'raw', bitDepth:12, ratio:2, presets:[1.5,2,2.5], ditOnly:true },
   { group:'RAW', id:'cinedng_16', name:'CinemaDNG (16-bit, uncompressed)', type:'raw', bitDepth:16, ratio:1, ratioLocked:true, ditOnly:true },
-  { group:'GoPro', id:'gopro_h265', name:'GoPro H.265 (HEVC, standard bitrate)', type:'mezz', bpp:0.136, approx:true, ditOnly:true },
-  { group:'GoPro', id:'gopro_mission_h265', name:'GoPro Mission H.265 (GP-Log2, standard bitrate)', type:'mezz', bpp:0.121, approx:true, ditOnly:true },
+  { group:'GoPro', id:'gopro_h265_std', name:'GoPro H.265 (Standard bit rate)', type:'table', approx:true, ditOnly:true,
+    hint:'GoPro\u2019s published card-capacity figures for a static scene. Real bit rate varies greatly with scene complexity.',
+    rates:{ '5120x2880':{24:58.6, 30:64.2, 60:71.1},
+            '3840x2160':{24:36.1, 30:53.0, 60:65.4, 120:89.4},
+            '2704x1520':{240:84.1},
+            '1920x1080':{30:24.8, 60:37.2, 120:55.8, 240:76.5} } },
+  { group:'GoPro', id:'gopro_h265_high', name:'GoPro H.265 (High bit rate)', type:'table', approx:true, ditOnly:true,
+    hint:'GoPro\u2019s published card-capacity figures for a static scene. Real bit rate varies greatly with scene complexity.',
+    rates:{ '5120x2880':{24:137.6, 30:137.6, 60:138.8},
+            '3840x2160':{24:86.6, 30:103.4, 60:138.8, 120:139.9},
+            '2704x1520':{240:139.9},
+            '1920x1080':{30:47.3, 60:76.5, 120:106.7, 240:138.8} } },
+  { group:'GoPro', id:'gopro_mission_max', name:'GoPro MISSION H.265 (Max bit rate)', type:'table', ditOnly:true,
+    hint:'GoPro specify Max as a constant 240 Mb/s. It is not offered on every mode \u2014 modes without it read as \u2014 rather than a substituted figure.',
+    rates:{ '7680x5760':{24:240, 30:240},
+            '7680x4320':{30:240, 60:240},
+            '3840x2160':{30:240, 60:240, 120:240, 240:240},
+            '1920x1080':{480:240} } },
+  { group:'GoPro', id:'gopro_mission_high', name:'GoPro MISSION H.265 (High bit rate)', type:'table', approx:true, ditOnly:true,
+    hint:'Derived from GoPro\u2019s published 256 GB card-capacity table for a static scene. MISSION uses constant-quality encoding, so real bit rate varies with the scene.',
+    rates:{ '7680x5760':{24:160.0, 30:160.0},
+            '7680x4320':{30:160.0, 60:160.0},
+            '3840x2160':{30:113.8, 60:142.2, 120:142.2, 240:142.2},
+            '1920x1080':{24:51.7, 30:51.7, 60:81.3, 120:113.8, 240:142.2, 480:142.2} } },
+  { group:'GoPro', id:'gopro_mission_std', name:'GoPro MISSION H.265 (Standard bit rate)', type:'table', approx:true, ditOnly:true,
+    hint:'Derived from GoPro\u2019s published 256 GB card-capacity table for a static scene. MISSION uses constant-quality encoding, so real bit rate varies with the scene.',
+    rates:{ '7680x5760':{24:103.4, 30:103.4},
+            '7680x4320':{30:103.4, 60:126.4},
+            '3840x2160':{30:56.9, 60:71.1, 120:94.8, 240:94.8},
+            '1920x1080':{24:29.2, 30:29.2, 60:40.6, 120:59.9, 240:81.3, 480:94.8} } },
   { group:'DJI', id:'dji_osmo_h265', name:'DJI H.265 (Osmo, standard bitrate)', type:'mezz', bpp:0.261, approx:true, ditOnly:true },
   { group:'AVC-Intra', id:'avc_intra_4k422', name:'AVC-Intra 4K-422 / All-I 400 (10-bit 4:2:2)', type:'mezz', bpp:1.507, resRange:[3000000,10000000], approx:true },
   { group:'AVC-Intra', id:'avc_intra100', name:'AVC-Intra 100 (HD, 10-bit 4:2:2)', type:'mezz', bpp:1.609, resRange:[0,2300000] },
@@ -572,14 +600,14 @@ const CAMERAS = [
       { name:'2.7K 16:9 — 2688×1512', w:2688, h:1512 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'GoPro', model:'HERO13 Black', codecs:['gopro_h265'],
+  { brand:'GoPro', model:'HERO13 Black', codecs:['gopro_h265_high','gopro_h265_std'],
     resolutions:[
       { name:'5.3K 16:9 — 5120×2880', w:5120, h:2880 },
       { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'2.7K 16:9 — 2704×1520', w:2704, h:1520 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'GoPro', model:'Mission 1 Pro', codecs:['gopro_mission_h265'],
+  { brand:'GoPro', model:'Mission 1 Pro', codecs:['gopro_mission_max','gopro_mission_high','gopro_mission_std'],
     resolutions:[
       { name:'HD — 1920×1080', w:1920, h:1080 },
       { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
@@ -801,6 +829,34 @@ function getFps(){
 function mezzMbps(bpp, w, h, fps){ return (w*h*fps*bpp)/1e6; }
 function rawMbps(bitDepth, ratio, w, h, fps){ return (w*h*fps*bitDepth/Math.max(ratio,0.001))/1e6; }
 
+/**
+ * Rate for a codec whose bit rate the manufacturer publishes per mode rather than
+ * as a bits-per-pixel figure. Consumer cameras cap at an encoder ceiling and fall
+ * away below it, so no single bpp fits: HERO13's implied bpp spans 0.141 to 0.760.
+ *
+ * Returns NaN for a mode with no published figure nearby, which fmt() renders as
+ * an em dash. A wrong number would be worse than an honest blank.
+ */
+function tableMbps(c, w, h, fps){
+  const byRes = c.rates[w + 'x' + h];
+  if(!byRes) return NaN;
+  const listed = Object.keys(byRes).map(Number).sort((a,b) => a - b);
+
+  // 23.976 / 29.97 / 59.94 are the same recording mode as 24 / 30 / 60.
+  const near = listed.find(r => Math.abs(r - fps) / r < 0.01);
+  if(near != null) return byRes[near];
+
+  // Interpolate between published points only, never beyond them. A frame rate the
+  // manufacturer does not list is either a mode the camera cannot shoot (MISSION's
+  // Max is N/A below 480 fps at 1080p) or one they decline to quote. Scaling into
+  // that gap invents figures: it produced a confident 120 Mb/s for a mode GoPro
+  // mark N/A. A blank is the honest answer.
+  if(fps < listed[0] || fps > listed[listed.length - 1]) return NaN;
+
+  const hi = listed.find(r => r > fps), lo = listed[listed.indexOf(hi) - 1];
+  return byRes[lo] + (byRes[hi] - byRes[lo]) * (fps - lo) / (hi - lo);
+}
+
 function fmt(n, d=2){
   if(!isFinite(n)) return '—';
   return n.toLocaleString(undefined,{minimumFractionDigits:d, maximumFractionDigits:d});
@@ -861,6 +917,8 @@ function render(){
   let videoMbps;
   if(codec.type === 'mezz'){
     videoMbps = mezzMbps(codec.bpp, w, h, fps);
+  } else if(codec.type === 'table'){
+    videoMbps = tableMbps(codec, w, h, fps);
   } else {
     const bitDepth = parseFloat(document.getElementById('bitDepth').value);
     const ratio = parseFloat(document.getElementById('ratio').value) || 1;
@@ -930,6 +988,7 @@ function renderCompare(w,h,fps,selectedId,liveBitDepth,liveRatio,codecList,showL
 
 function codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio){
   if(c.type === 'mezz') return mezzMbps(c.bpp,w,h,fps);
+  if(c.type === 'table') return tableMbps(c,w,h,fps);
   if(c.id === selectedId && liveBitDepth != null){
     return rawMbps(liveBitDepth, liveRatio, w, h, fps);
   }
