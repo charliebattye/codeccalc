@@ -41,16 +41,25 @@ Do not "correct" it to 1024.
 
 ## The data model
 
-`CODECS` holds 44 entries. `type:'mezz'` carries a bits-per-pixel figure
-(`bpp`); `type:'raw'` carries `bitDepth` and a compression `ratio`, optionally
-with `presets` (the ratio chips) and `ratioLocked` for uncompressed formats.
+`CODECS` holds 47 entries in three rate models:
+
+- **`type:'mezz'`** (33) carries a bits-per-pixel figure, `bpp`.
+- **`type:'raw'`** (9) carries `bitDepth` and a compression `ratio`, optionally
+  with `presets` (the ratio chips) and `ratioLocked` for uncompressed formats.
+- **`type:'table'`** (5) carries `rates`, a published bit rate per mode. Used
+  where no bits-per-pixel value can be correct, because the manufacturer sets
+  the rate by mode rather than by pixel count. See below.
 
 Four flags change behaviour, and are easy to miss:
 
 - `approx:true` appends "(approx.)" to the codec name.
-- `ditOnly:true` hides the codec from Stream mode. Six entries use this.
+- `ditOnly:true` hides the codec from Stream mode and from its comparison
+  table. Sixteen entries use this: every camera-specific format lives in DIT
+  mode, leaving Stream mode for codecs you can meaningfully compare across
+  manufacturers.
 - `resRange:[minPx,maxPx]` limits which of a camera's resolutions the codec
-  offers in DIT mode, by total pixel count.
+  offers in DIT mode, by total pixel count. It is consulted **only** in DIT
+  mode, so it restricts nothing in Stream mode.
 - `hint` shows a note beneath the readout.
 
 `CAMERAS` holds 22 models across ARRI, Blackmagic, Canon, DJI, GoPro,
@@ -58,6 +67,28 @@ Panasonic, RED, and Sony. Each lists its native resolutions and a `codecs`
 array of **`CODECS` ids**. A typo in that array silently drops the option from
 the dropdown rather than failing loudly, so check a camera's codec list in the
 browser after editing it.
+
+### Table-driven codecs
+
+`rates` is keyed `'WIDTHxHEIGHT'`, then by frame rate:
+
+    rates:{ '3840x2160':{24:36.1, 30:53.0, 60:65.4, 120:89.4}, ... }
+
+`tableMbps()` reads it. Frame rates within 1% of a published one snap to it, so
+23.976 / 29.97 / 59.94 resolve to 24 / 30 / 60. A frame rate between two
+published ones is interpolated. Anything outside the published range returns
+`NaN`, which `fmt()` renders as an em dash.
+
+**It deliberately never extrapolates.** Absence from the table means the
+manufacturer publishes nothing, and often means the camera cannot shoot that
+mode at all — GoPro mark MISSION's Max setting N/A below 480 fps at 1080p. An
+earlier version scaled outside the published range and produced a confident
+120 Mb/s for exactly that unavailable mode. A blank is the honest answer.
+
+**The keys must track the camera's resolution list.** `rates` keys are matched
+against `w + 'x' + h` from `CAMERAS`. Change a camera's resolution without
+changing the table (or the reverse) and every mode silently reads as a dash.
+Nothing warns you, so check both after editing either.
 
 ## The accuracy contract
 
@@ -69,7 +100,21 @@ point it came from. Never adjust a figure to make a comparison look tidier, and
 never round one to make two codecs agree.
 
 Where a published spec is stated at one resolution, record that in `hint` (the
-XAVC-Intra entries do this) rather than silently averaging across resolutions.
+XAVC-Intra and X-OCN entries do this) rather than silently averaging across
+resolutions.
+
+Prefer a stated specification to one you derive. Card-capacity tables are
+bitrate tables in disguise — capacity divided by recording time — and they are
+often the only published source for consumer cameras. But check the derived
+figure against any stated one: GoPro's MISSION table rounds every Max entry to
+"2Hrs", which implies 284 Mb/s where GoPro state a constant 240.
+
+**The page documents its own figures.** "Notes on the numbers", at the foot of
+`index.html`, records where each family's numbers come from and how far they
+can be trusted. It is part of the product, not a comment. Change a figure or a
+rate model and change its paragraph in the same commit, or the tool will
+describe itself inaccurately — worse in a provenance section than saying
+nothing at all.
 
 ## Publishing
 
@@ -91,8 +136,11 @@ Charlie asks why the site still shows the old version, this is why.
 - Open `index.html` and exercise **both** modes.
 - Check the readout line, the four stat tiles, the storage total, and the
   comparison table, which is sorted by data rate and highlights the selection.
-- Check one RAW codec (bit depth, ratio chips, the locked-ratio case) and one
-  mezzanine codec.
+- Check one codec of each rate model: a mezzanine one, a RAW one (bit depth,
+  ratio chips, the locked-ratio case), and a table-driven one.
+- After touching a `rates` table, check a published mode reads its published
+  figure, and that a mode the manufacturer omits reads as a dash rather than a
+  number.
 - Check the layout at phone width. Breakpoints are 880px, 640px, and 560px; at
   560px the comparison table stacks and takes its column names from each cell's
   `data-label`. A new numeric column needs a `data-label` or it loses its
