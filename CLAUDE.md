@@ -141,6 +141,12 @@ Charlie asks why the site still shows the old version, this is why.
 - After touching a `rates` table, check a published mode reads its published
   figure, and that a mode the manufacturer omits reads as a dash rather than a
   number.
+- After changing a `resRange`, or a camera's `codecs` or resolution list, check
+  that every resolution the camera lists is still reachable by at least one of
+  its codecs. An unreachable one sits in the dropdown looking selectable and
+  never is. The BURANO's HD was stranded this way, and stayed hidden because
+  X-OCN — the only one of its codecs without a `resRange` — was covering for
+  the missing HD formats underneath.
 - Check the layout at phone width. Breakpoints are 880px, 640px, and 560px; at
   560px the comparison table stacks and takes its column names from each cell's
   `data-label`. A new numeric column needs a `data-label` or it loses its
