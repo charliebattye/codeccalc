@@ -131,22 +131,43 @@ Refreshing it is a deliberate, separate act, done from the website repository:
 So a change here reaches the website only when someone runs that there. If
 Charlie asks why the site still shows the old version, this is why.
 
+## Checking your work
+
+`index.html` carries its own data checks. Open it with `?selftest` on the end of
+the URL, or call `runSelfTest()` from the browser console — useful where a
+preview pane rewrites the URL and drops the query string. `runSelfTest(true)`
+returns the results without drawing the panel.
+
+Ten checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
+codec carries the fields its rate model needs, that every codec id a camera
+names exists, that every resolution a camera lists is reachable, that every
+camera/codec pairing offers something, that every combination the DIT mode
+offers produces a usable figure, that published table figures round-trip
+exactly, that broadcast frame rates snap to their whole-number neighbour, and
+that every `rates` key matches a raster on a camera that uses that codec.
+
+They live inside `index.html` rather than a separate page because a browser will
+not let one `file://` document read another's data. A standalone checker would
+need a web server, breaking "there is nothing to run", or its own copy of the
+data, which would drift. Here they can only ever test what the tool uses — the
+`rates` key check caught two rasters added speculatively that no camera had.
+
+It also prints notices, which are not failures: a raster a camera shoots that
+sits *inside* the range a table codec covers but has no published figure.
+
 ## Before calling a change done
 
+- Run `runSelfTest()`. All ten checks must pass before anything else is worth
+  looking at.
 - Open `index.html` and exercise **both** modes.
 - Check the readout line, the four stat tiles, the storage total, and the
   comparison table, which is sorted by data rate and highlights the selection.
 - Check one codec of each rate model: a mezzanine one, a RAW one (bit depth,
   ratio chips, the locked-ratio case), and a table-driven one.
-- After touching a `rates` table, check a published mode reads its published
-  figure, and that a mode the manufacturer omits reads as a dash rather than a
-  number.
-- After changing a `resRange`, or a camera's `codecs` or resolution list, check
-  that every resolution the camera lists is still reachable by at least one of
-  its codecs. An unreachable one sits in the dropdown looking selectable and
-  never is. The BURANO's HD was stranded this way, and stayed hidden because
-  X-OCN — the only one of its codecs without a `resRange` — was covering for
-  the missing HD formats underneath.
+- The self-test covers the data traps that used to be manual here: published
+  figures round-tripping, and every listed resolution staying reachable. The
+  BURANO's HD was once stranded — present in the dropdown, selectable by no
+  codec — and stayed hidden for months. That check now runs in a second.
 - Check the layout at phone width. Breakpoints are 880px, 640px, and 560px; at
   560px the comparison table stacks and takes its column names from each cell's
   `data-label`. A new numeric column needs a `data-label` or it loses its

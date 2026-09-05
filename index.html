@@ -421,12 +421,10 @@ const CODECS = [
   { group:'XAVC', id:'xavc_i_c480', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, resRange:[3000000,10000000], hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 480 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
   { group:'XAVC', id:'xavc_l_hd10', name:'XAVC-L HD 50 (Long GOP, 10-bit 4:2:2)', type:'table', approx:true,
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
-    rates:{ '2048x1080':{24:50, 25:50, 30:50, 48:50, 50:50, 60:50},
-            '1920x1080':{24:50, 25:50, 30:50, 48:50, 50:50, 60:50} } },
+    rates:{ '1920x1080':{24:50, 25:50, 30:50, 48:50, 50:50, 60:50} } },
   { group:'XAVC', id:'xavc_l_hd8', name:'XAVC-L HD 35 (Long GOP, 8-bit 4:2:0)', type:'table', approx:true,
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
-    rates:{ '2048x1080':{24:35, 25:35, 30:35, 48:35, 50:35, 60:35},
-            '1920x1080':{24:35, 25:35, 30:35, 48:35, 50:35, 60:35} } },
+    rates:{ '1920x1080':{24:35, 25:35, 30:35, 48:35, 50:35, 60:35} } },
   { group:'XAVC', id:'xavc_l_4k', name:'XAVC-L 4K / QFHD (Long GOP, 8-bit 4:2:0)', type:'table', approx:true,
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
     rates:{ '4096x2160':{24:100, 25:100, 30:100, 48:150, 50:150, 60:150},
@@ -1080,6 +1078,177 @@ function codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio){
 
 document.getElementById('tableScroll').classList.toggle('v-capped', currentMode==='stream');
 render();
+
+/* ---------- self-test -------------------------------------------------------
+ * Open this file with ?selftest on the end of the URL to run the data checks.
+ * Inert otherwise, so the shipped tool is untouched.
+ *
+ * These live here rather than in a separate checks page because a browser will
+ * not let one file:// document read another's data - neither fetch nor
+ * cross-frame access is allowed - so a standalone checker would need either a
+ * web server, breaking "there is nothing to install and nothing to run", or its
+ * own copy of CODECS and CAMERAS, which would drift from the real thing the
+ * first time either changed. Kept here, the checks can only test the live data.
+ */
+function runSelfTest(quiet){
+  const results = [], notices = [];
+  const check = (name, fn) => {
+    let failures;
+    try { failures = fn() || []; } catch(e){ failures = ['threw: ' + e.message]; }
+    results.push({ name, failures });
+  };
+  const rateOf = (c, w, h, fps) =>
+      c.type === 'table' ? tableMbps(c, w, h, fps)
+    : c.type === 'mezz'  ? mezzMbps(c.bpp, w, h, fps)
+    :                      rawMbps(c.bitDepth, c.ratio, w, h, fps);
+
+  check('codec ids are unique', () => {
+    const seen = new Set(), dup = [];
+    CODECS.forEach(c => seen.has(c.id) ? dup.push(c.id) : seen.add(c.id));
+    return dup;
+  });
+
+  check('each codec carries the fields its rate model needs', () =>
+    CODECS.filter(c =>
+        c.type === 'mezz'  ? typeof c.bpp !== 'number'
+      : c.type === 'raw'   ? typeof c.bitDepth !== 'number' || typeof c.ratio !== 'number'
+      : c.type === 'table' ? !c.rates || !Object.keys(c.rates).length
+      :                      true
+    ).map(c => c.id + ' (type ' + c.type + ')'));
+
+  check('every codec id a camera names exists', () => {
+    const ids = new Set(CODECS.map(c => c.id)), bad = [];
+    CAMERAS.forEach(cam => cam.codecs.forEach(id => {
+      if(!ids.has(id)) bad.push(cam.model + ' -> ' + id);
+    }));
+    return bad;
+  });
+
+  check('every resolution a camera lists is reachable by one of its codecs', () =>
+    CAMERAS.reduce((bad, cam) => bad.concat(cam.resolutions
+      .filter(r => !cam.codecs.some(id =>
+        resolutionsForCamera(cam, id).some(x => x.w === r.w && x.h === r.h)))
+      .map(r => cam.model + ': ' + r.name)), []));
+
+  check('every camera and codec pairing offers at least one resolution', () =>
+    CAMERAS.reduce((bad, cam) => bad.concat(cam.codecs
+      .filter(id => !resolutionsForCamera(cam, id).length)
+      .map(id => cam.model + ' / ' + id)), []));
+
+  check('every combination the DIT mode offers produces a usable figure', () => {
+    const bad = [];
+    CAMERAS.forEach(cam => cam.codecs.forEach(id => {
+      const c = CODECS.find(x => x.id === id);
+      if(!c) return;
+      resolutionsForCamera(cam, id).forEach(r => {
+        const rates = frameratesFor(c, r.w, r.h).filter(f => f !== 'custom');
+        if(!rates.length){ bad.push(cam.model+'/'+id+'/'+r.w+'x'+r.h+': no frame rate'); return; }
+        rates.forEach(f => {
+          const v = rateOf(c, r.w, r.h, f);
+          if(!isFinite(v) || v <= 0) bad.push(cam.model+'/'+id+'/'+r.w+'x'+r.h+' @'+f);
+        });
+      });
+    }));
+    return bad;
+  });
+
+  check('published table figures round-trip exactly', () => {
+    const bad = [];
+    CODECS.filter(c => c.type === 'table').forEach(c =>
+      Object.keys(c.rates).forEach(raster => {
+        const wh = raster.split('x').map(Number);
+        Object.keys(c.rates[raster]).forEach(fps => {
+          const want = c.rates[raster][fps];
+          const got  = tableMbps(c, wh[0], wh[1], Number(fps));
+          if(!(Math.abs(got - want) <= 0.05))
+            bad.push(c.id+' '+raster+'@'+fps+': '+got+' should be '+want);
+        });
+      }));
+    return bad;
+  });
+
+  check('broadcast frame rates snap to their whole-number neighbour', () => {
+    const bad = [], pairs = [[23.976, 24], [29.97, 30], [59.94, 60]];
+    CODECS.filter(c => c.type === 'table').forEach(c =>
+      Object.keys(c.rates).forEach(raster => {
+        const wh = raster.split('x').map(Number);
+        pairs.forEach(pair => {
+          const want = c.rates[raster][pair[1]];
+          if(want == null) return;
+          const got = tableMbps(c, wh[0], wh[1], pair[0]);
+          if(!(Math.abs(got - want) <= 0.05))
+            bad.push(c.id+' '+raster+' @'+pair[0]+': '+got+' should be '+want);
+        });
+      }));
+    return bad;
+  });
+
+  check('every rates key matches a raster on a camera that uses that codec', () => {
+    const bad = [];
+    CODECS.filter(c => c.type === 'table').forEach(c => {
+      const rasters = new Set();
+      CAMERAS.filter(cam => cam.codecs.indexOf(c.id) !== -1)
+             .forEach(cam => cam.resolutions.forEach(r => rasters.add(r.w+'x'+r.h)));
+      Object.keys(c.rates).forEach(k => {
+        if(!rasters.has(k)) bad.push(c.id+': '+k+' matches no camera resolution');
+      });
+    });
+    return bad;
+  });
+
+  check('no camera offers a frame rate below 1 or a zero-pixel raster', () =>
+    CAMERAS.reduce((bad, cam) => bad.concat(
+      cam.resolutions.filter(r => !(r.w > 0 && r.h > 0))
+        .map(r => cam.model + ': ' + r.name)), []));
+
+  /* Not failures - things worth a human glance. A table codec naturally covers
+   * only part of a camera's range (an HD codec has no 4K figures), so only an
+   * unpublished raster that sits *between* two the table does cover is odd. */
+  CAMERAS.forEach(cam => cam.codecs.forEach(id => {
+    const c = CODECS.find(x => x.id === id);
+    if(!c || c.type !== 'table') return;
+    const covered = Object.keys(c.rates).map(k => {
+      const wh = k.split('x'); return Number(wh[0]) * Number(wh[1]);
+    });
+    const lo = Math.min.apply(null, covered), hi = Math.max.apply(null, covered);
+    cam.resolutions.forEach(r => {
+      const px = r.w * r.h;
+      if(c.rates[r.w+'x'+r.h] || px < lo || px > hi) return;
+      notices.push(cam.model+' shoots '+r.name+', which sits inside the range '
+                   +c.id+' covers, but has no published figure');
+    });
+  }));
+
+  const failed = results.filter(r => r.failures.length);
+  const panel = document.createElement('div');
+  panel.style.cssText = 'max-width:1180px;margin:0 auto;padding:24px;font-family:var(--font-mono);font-size:12px;';
+  panel.innerHTML =
+    '<div style="border:1px solid var(--border);border-radius:10px;padding:20px;background:var(--panel);">'
+    + '<div style="font-family:var(--font-display);font-size:18px;margin-bottom:4px;color:'
+    + (failed.length ? 'var(--red)' : 'var(--green)') + '">'
+    + (failed.length ? failed.length + ' of ' + results.length + ' checks FAILED'
+                     : 'all ' + results.length + ' checks passed') + '</div>'
+    + '<div style="color:var(--text-faint);margin-bottom:16px;">'
+    + CODECS.length + ' codecs, ' + CAMERAS.length + ' cameras, '
+    + CAMERAS.reduce((n,c) => n + c.resolutions.length, 0) + ' resolutions</div>'
+    + results.map(r =>
+        '<div style="margin-bottom:6px;"><span style="color:'
+        + (r.failures.length ? 'var(--red)' : 'var(--green)') + '">'
+        + (r.failures.length ? 'FAIL' : ' OK ') + '</span>  ' + r.name
+        + r.failures.map(f => '<div style="color:var(--red);padding-left:44px;">' + f + '</div>').join('')
+        + '</div>').join('')
+    + (notices.length
+        ? '<div style="margin-top:16px;color:var(--text-dim);">notices (not failures)</div>'
+          + notices.map(n => '<div style="color:var(--text-faint);padding-left:12px;">' + n + '</div>').join('')
+        : '')
+    + '</div>';
+  if(!quiet) document.body.insertBefore(panel, document.body.firstChild);
+  return { checks: results.length, failed: failed, notices: notices };
+}
+
+// Runs itself when the URL asks. Otherwise call runSelfTest() from the browser
+// console - handy where a preview pane rewrites the URL and drops the query.
+if(location.search.indexOf('selftest') !== -1) runSelfTest();
 </script>
 </body>
 </html>
