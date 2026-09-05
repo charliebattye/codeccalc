@@ -300,10 +300,10 @@
           <select id="channels">
             <option value="0">None</option>
             <option value="1">Mono</option>
-            <option value="2" selected>Stereo</option>
+            <option value="2">Stereo</option>
             <option value="4">4ch</option>
             <option value="8">8ch</option>
-            <option value="16">16ch</option>
+            <option value="16" selected>16ch</option>
           </select>
         </div>
         <div class="field">
@@ -809,7 +809,9 @@ CODECS.forEach(c=>{
   opt.textContent = codecLabel(c);
   groups[c.group].appendChild(opt);
 });
-codecSel.value = 'prores_hq';
+// Stream Record opens on a broadcast-standard HD mode: an exact-confidence codec,
+// PAL frame rate, and a full 16-channel bed so the audio contribution is visible.
+codecSel.value = 'xavc_i_c100';
 
 const resSel = document.getElementById('resolution');
 RESOLUTIONS.forEach((r,i)=>{
@@ -818,7 +820,7 @@ RESOLUTIONS.forEach((r,i)=>{
   opt.textContent = r.name;
   resSel.appendChild(opt);
 });
-resSel.value = 4;
+resSel.value = 1;          // HD 1080p 1920x1080
 
 const fpsSel = document.getElementById('framerate');
 FRAMERATES.forEach(f=>{
@@ -827,7 +829,7 @@ FRAMERATES.forEach(f=>{
   opt.textContent = f === 'custom' ? 'Custom' : f + ' fps';
   fpsSel.appendChild(opt);
 });
-fpsSel.value = 24;
+fpsSel.value = 25;
 
 /* ---------- DIT / Data Wrangle: camera-driven selects ---------- */
 const camBrandSel = document.getElementById('camBrand');
