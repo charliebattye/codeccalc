@@ -422,6 +422,11 @@ const CODECS = [
     rates:{ '1920x1080':{23.98:89, 25:112, 29.97:111, 50:223, 59.94:222} } },
   { group:'XAVC', id:'xavc_i_c300', confidence:'exact', source:'xavc_intra', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, resRange:[3000000,10000000], hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 300 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
   { group:'XAVC', id:'xavc_i_c480', confidence:'exact', source:'xavc_intra', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, resRange:[3000000,10000000], hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 480 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
+  { group:'XAVC', id:'xavc_s_i', confidence:'exact', source:'xavc_s_i', name:'XAVC S-I (10-bit 4:2:2)', type:'table',
+    hint:'Sony\u2019s Alpha-line intra codec. Not the same as XAVC-Intra: XAVC S-I HD is frame-rate proportional, where XAVC-I HD is CBG and costs the same at 25p as at 29.97p. Sony state DCI 4K at the same rates as QFHD.',
+    rates:{ '4096x2160':{23.98:240, 24:240, 25:250, 29.97:300, 50:500, 59.94:600},
+            '3840x2160':{23.98:240, 25:250, 29.97:300, 50:500, 59.94:600},
+            '1920x1080':{23.98:89, 25:93, 29.97:111, 50:185, 59.94:222} } },
   { group:'XAVC', id:'xavc_l_hd10', confidence:'exact', source:'xavc_l', name:'XAVC-L HD 50 (Long GOP, 10-bit 4:2:2)', type:'table',
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
     rates:{ '1920x1080':{24:50, 25:50, 30:50, 48:50, 50:50, 60:50} } },
@@ -557,10 +562,15 @@ const CAMERAS = [
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c300','xavc_l_4k'] },
       { name:'HD — 1920×1080', w:1920, h:1080, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c100','xavc_l_hd10','xavc_l_hd8'] },
     ] },
-  { brand:'Sony', model:'FX3', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10'],
+  { brand:'Sony', model:'FX3', source:'Sony ILME-FX3 published specification, recording formats and frame rates',
+    codecs:['xavc_s_i'],
     resolutions:[
-      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
-      { name:'HD — 1920×1080', w:1920, h:1080 },
+      // The FX3 is an Alpha-line camera: XAVC S-I, XAVC S and XAVC HS, not the
+      // cinema line's XAVC-Intra and XAVC-L. Only the intra family is modelled;
+      // XAVC S and XAVC HS are menus of eight and eleven selectable bitrates.
+      { name:'4K DCI — 4096×2160', w:4096, h:2160, fps:[23.98,24,25,29.97,50,59.94], codecs:['xavc_s_i'] },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_s_i'] },
+      { name:'HD — 1920×1080', w:1920, h:1080, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_s_i'] },
     ] },
   { brand:'Sony', model:'PXW-FS7 II', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
     resolutions:[
@@ -690,6 +700,7 @@ const SOURCES = {
   prores: "Apple's published target data rates. ProRes is constant bits per pixel, so the figures scale exactly with raster and frame rate; checked against Apple's table at both 1080p and UHD.",
   dnxhr: "Avid's published bandwidth specifications, verified against all fifty figures Avid publish — two rasters by five frame rates by five tiers — to within 0.84%. HQ and HQX share a bit rate by design: HQX buys 12-bit depth, not a larger file.",
   xavc_intra: "Sony's published maximum bit rates. Class 300 is verified exactly against the FR7 specification at QFHD across all five frame rates, to within 0.1%. Class 100 is held as a table of Sony's stated HD figures rather than a per-pixel rate, because XAVC-I HD is CBG: 25p and 50p carry the same frame budget as 29.97p and 59.94p, which a per-pixel model read 22% low. A class defines a coded-frame-size budget rather than a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K. Sony rate DCI and QFHD identically, so the wider raster reads about 7% high here — each entry's hint says so.",
+  xavc_s_i: "Sony's published maximum bit rates for the Alpha line. A separate codec from XAVC-Intra despite the similar name: XAVC S-I HD holds a flat 3.70 bits per frame across every rate, where XAVC-I HD is CBG and gives 25p and 50p the same budget as their NTSC neighbours. Modelling the FX3 with the cinema-line figures would have overstated it by 20% at 25p and 50p. Sony state DCI 4K at the same rates as QFHD, so both rasters are held explicitly.",
   xavc_l: "Sony's class bit rates, held in a per-mode table. XAVC-L is rated by class rather than by frame rate: the class name is the bit rate. Published card recording times for the FX6 and FX9 confirm the shape, quoting one time across 24/25/30p and another across 50/60p, which a frame-rate-proportional codec could not do.",
   raw_computed: "Computed from sensor bit depth × pixel count × frame rate ÷ compression ratio. Real-world RAW rates vary with image content, so these are planning estimates rather than guarantees — adjust the ratio slider if you have camera-specific figures. Blackmagic define their ratios against the unprocessed sensor frame, which is exactly this calculation.",
   uncompressed: "Arithmetic rather than specification: 10-bit 4:2:2 is 20 bits per pixel, 10-bit 4:4:4 RGB is 30. Exact by definition.",
