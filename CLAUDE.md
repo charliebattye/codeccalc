@@ -159,7 +159,7 @@ Ten of twenty-three camera lists have been read from a manufacturer document.
 `runSelfTest()` reports the count and names the rest on every run, so this
 section is the *how*, not the record — the data is the record.
 
-**Verified.** All eight Sonys (FX6, FX3, FR7, PXW-FX9, PXW-FS7 II, A7S III,
+**Verified.** All eight Sonys (FX6, FX3, FR7, FX9, FS7 II, A7S III,
 BURANO, VENICE 2) and both GoPros (HERO13 Black, MISSION 1 Pro).
 
 **Remaining**, in the order worth doing:
@@ -184,7 +184,7 @@ have been wrong:
 - **XAVC S-I HD** is not **XAVC-I HD**: 93 against 112 at 25p, 185 against 223
   at 50p.
 - The **A7S III** matches the FX3's tables exactly but has **no DCI 4K**.
-- The **PXW-FS7 II** is a third table again — VBR where the FX6 is CBG, so
+- The **FS7 II** is a third table again — VBR where the FX6 is CBG, so
   50p is 185 rather than 223.
 
 Read each specification. The saving from assuming is minutes; the cost is a
