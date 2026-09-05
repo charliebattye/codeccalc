@@ -999,8 +999,26 @@ function populateCameraResolutions(){
   populateCameraFramerates();
 }
 
-camBrandSel.value = CAMERAS[0].brand;
-populateCameraModels();
+/* DIT mode opens on the same broadcast HD mode as Stream Record, rather than on
+ * whichever camera sorts first. Alphabetical order used to land on an Alexa 35
+ * recording uncompressed ARRIRAW at 1920x1080 - a varies-confidence figure, an
+ * unusual codec choice, and a raster nobody shoots that camera at. Chosen instead
+ * so the first number a visitor sees is an exact one. */
+const openOn = (brand, model, codec, w, h, fps) => {
+  camBrandSel.value = brand;
+  populateCameraModels();
+  const i = modelsForBrand(brand).findIndex(m => m.model === model);
+  if(i >= 0){ camModelSel.value = i; populateCameraCodecsAndRes(); }
+  if([...camCodecSel.options].some(o => o.value === codec)){
+    camCodecSel.value = codec;
+    populateCameraResolutions();
+  }
+  const r = resolutionsForCamera(getCamera(), camCodecSel.value)
+              .findIndex(x => x.w === w && x.h === h);
+  if(r >= 0){ camResSel.value = r; populateCameraFramerates(); }
+  if([...camFpsSel.options].some(o => Number(o.value) === fps)) camFpsSel.value = fps;
+};
+openOn('Sony', 'PXW-FX9', 'xavc_i_c100', 1920, 1080, 25);
 
 camBrandSel.addEventListener('change', ()=>{ populateCameraModels(); render(); });
 camModelSel.addEventListener('change', ()=>{ populateCameraCodecsAndRes(); render(); });
