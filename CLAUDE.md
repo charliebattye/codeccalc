@@ -91,6 +91,11 @@ source. The BURANO is the worked example: its six rasters are a transcription of
 Sony's Recording Formats poster, and its 8.6K modes correctly cap at 30 fps
 while its 6K reaches 60.
 
+A camera may also carry `source:'…'`, naming the document its resolution list
+came from. Four do; the self-test reports the count and names the rest as a
+notice each run, so the gap stays visible rather than living in someone's head.
+Add a camera's source when you verify it, and correct the list at the same time.
+
 This matters because manufacturers publish **modes**, not three independent
 axes. Every data bug found in the September 2026 audit came from that mismatch:
 the HERO13's 1080p has no 24 fps, the BURANO's 8.6K stops at 30, MISSION's Max

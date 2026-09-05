@@ -538,7 +538,7 @@ const CAMERAS = [
       { name:'2K — 2048×1080', w:2048, h:1080 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'Sony', model:'VENICE 2 (8K sensor)', codecs:['xocn_xt','xocn_st','xocn_lt','prores_4444','prores_hq'],
+  { brand:'Sony', model:'VENICE 2 (8K sensor)', source:'Sony VENICE and VENICE 2 file size calculator, sony-cinematography.com', codecs:['xocn_xt','xocn_st','xocn_lt','prores_4444','prores_hq'],
     resolutions:[
       { name:'8.6K 3:2 — 8640×5760', w:8640, h:5760 },
       { name:'8.2K 17:9 — 8192×4320', w:8192, h:4320 },
@@ -561,7 +561,7 @@ const CAMERAS = [
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'Sony', model:'BURANO', codecs:['xocn_lt','xavc_h_i_hq','xavc_h_i_sq','xavc_i_c300','xavc_l_4k','xavc_i_c100','xavc_l_hd10'],
+  { brand:'Sony', model:'BURANO', source:'Sony BURANO Recording Formats poster, FL85-BURANO-Recording-Poster_A1_V13', codecs:['xocn_lt','xavc_h_i_hq','xavc_h_i_sq','xavc_i_c300','xavc_l_4k','xavc_i_c100','xavc_l_hd10'],
     resolutions:[
       // Transcribed from Sony's BURANO Recording Formats poster (FL85 v13). Each
       // raster names the codecs Sony pair it with and the frame-rate range they quote.
@@ -624,14 +624,14 @@ const CAMERAS = [
       { name:'2.7K 16:9 — 2688×1512', w:2688, h:1512 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'GoPro', model:'HERO13 Black', codecs:['gopro_h265_high','gopro_h265_std'],
+  { brand:'GoPro', model:'HERO13 Black', source:'GoPro HERO13 Black published specification, video resolutions and frame rates', codecs:['gopro_h265_high','gopro_h265_std'],
     resolutions:[
       { name:'5.3K 16:9 — 5120×2880', w:5120, h:2880 },
       { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'2.7K 16:9 — 2704×1520', w:2704, h:1520 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'GoPro', model:'Mission 1 Pro', codecs:['gopro_mission_max','gopro_mission_high','gopro_mission_std'],
+  { brand:'GoPro', model:'Mission 1 Pro', source:'GoPro MISSION 1 Pro published specification, plus the MISSION card-capacity article', codecs:['gopro_mission_max','gopro_mission_high','gopro_mission_std'],
     resolutions:[
       { name:'HD — 1920×1080', w:1920, h:1080 },
       { name:'4K 16:9 — 3840×2160', w:3840, h:2160 },
@@ -1322,6 +1322,12 @@ function runSelfTest(quiet){
     CAMERAS.reduce((bad, cam) => bad.concat(
       cam.resolutions.filter(r => !(r.w > 0 && r.h > 0))
         .map(r => cam.model + ': ' + r.name)), []));
+
+  const unsourced = CAMERAS.filter(c => !c.source).map(c => c.model);
+  if(unsourced.length)
+    notices.push('camera resolution lists taken from a manufacturer source: '
+      + (CAMERAS.length - unsourced.length) + ' of ' + CAMERAS.length
+      + '. Still to verify: ' + unsourced.join(', '));
 
   /* Not failures - things worth a human glance. A table codec naturally covers
    * only part of a camera's range (an HD codec has no 4K figures), so only an
