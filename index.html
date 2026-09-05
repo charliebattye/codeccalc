@@ -562,10 +562,14 @@ const CAMERAS = [
     ] },
   { brand:'Sony', model:'BURANO', codecs:['xocn_lt','xavc_h_i_hq','xavc_h_i_sq','xavc_i_c300','xavc_l_4k','xavc_i_c100','xavc_l_hd10'],
     resolutions:[
-      { name:'HD — 1920×1080', w:1920, h:1080 },
-      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
-      { name:'6K Full-Frame Crop — 6052×3404', w:6052, h:3404 },
-      { name:'8.6K Full-Frame 16:9 — 8632×4856', w:8632, h:4856 },
+      // Transcribed from Sony's BURANO Recording Formats poster (FL85 v13). Each
+      // raster names the codecs Sony pair it with and the frame-rate range they quote.
+      { name:'HD — 1920×1080', w:1920, h:1080, maxFps:60, codecs:['xavc_i_c100','xavc_l_hd10'] },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, maxFps:60, codecs:['xavc_i_c300','xavc_l_4k'] },
+      { name:'4K DCI 17:9 — 4096×2160', w:4096, h:2160, maxFps:60, codecs:['xavc_i_c300','xavc_l_4k'] },
+      { name:'6K Full-Frame Crop 16:9 — 6052×3404', w:6052, h:3404, maxFps:60, codecs:['xocn_lt'] },
+      { name:'8K 16:9 — 7680×4320', w:7680, h:4320, maxFps:30, codecs:['xavc_h_i_hq','xavc_h_i_sq'] },
+      { name:'8.6K Full-Frame 16:9 — 8632×4856', w:8632, h:4856, maxFps:30, codecs:['xocn_lt'] },
     ] },
   { brand:'Sony', model:'FR7', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
     resolutions:[
@@ -748,12 +752,19 @@ function resolutionsForCamera(cam, codecId){
     // (e.g. data entry mismatch), show the full list rather than an empty dropdown.
     if(filtered.length) list = filtered;
   }
+  // A raster may name the codecs it is actually offered with. Sony pair them: the
+  // BURANO's 8632x4856 is X-OCN only, while XAVC H uses 7680x4320. resRange scopes
+  // by pixel count alone and cannot say that.
+  if(codecId){
+    const paired = list.filter(r => !r.codecs || r.codecs.indexOf(codecId) !== -1);
+    if(paired.length) list = paired;
+  }
   // A table-driven codec can publish a raster only at frame rates this tool cannot
   // offer: GoPro publish MISSION's Max at 1080p for 480 fps alone, and the frame-rate
   // list stops at 120. Drop rasters where nothing selectable would produce a figure,
   // rather than leaving a resolution that reads as a dash whatever else you choose.
   if(codec && codec.type === 'table'){
-    const usable = list.filter(r => frameratesFor(codec, r.w, r.h).length > 0);
+    const usable = list.filter(r => frameratesFor(codec, r).length > 0);
     if(usable.length) list = usable;
   }
   return [...list].sort((a,b)=>(a.w*a.h)-(b.w*b.h));
@@ -768,9 +779,15 @@ function resolutionsForCamera(cam, codecId){
  * dash. Codecs with a bits-per-pixel or RAW model answer at any frame rate, so
  * they keep the full list.
  */
-function frameratesFor(codec, w, h){
-  if(!codec || codec.type !== 'table') return FRAMERATES;
-  const usable = FRAMERATES.filter(f => f !== 'custom' && isFinite(tableMbps(codec, w, h, f)));
+function frameratesFor(codec, res){
+  // What the camera itself offers at this raster, where the manufacturer says so.
+  // maxFps suits a quoted range ("1-30 fps"); fps suits an enumerated list.
+  let offered = FRAMERATES;
+  if(res.maxFps) offered = offered.filter(f => f === 'custom' || f <= res.maxFps);
+  if(res.fps)    offered = offered.filter(f => f === 'custom'
+                            || res.fps.some(x => Math.abs(x - f) / x < 0.01));
+  if(!codec || codec.type !== 'table') return offered;
+  const usable = offered.filter(f => f !== 'custom' && isFinite(tableMbps(codec, res.w, res.h, f)));
   // Empty is a real answer, not a failure: it means this tool cannot offer any frame
   // rate the manufacturer publishes for that raster. Falling back to the full list
   // here would put twelve unusable rates in the dropdown and, worse, would stop
@@ -783,7 +800,7 @@ function populateCameraFramerates(){
   const r = opts[parseInt(camResSel.value)] || opts[0];
   if(!r) return;
   const codec = CODECS.find(c => c.id === camCodecSel.value);
-  const list = frameratesFor(codec, r.w, r.h).length ? frameratesFor(codec, r.w, r.h) : FRAMERATES;
+  const list = frameratesFor(codec, r).length ? frameratesFor(codec, r) : FRAMERATES;
   const previous = camFpsSel.value;
 
   camFpsSel.innerHTML = '';
@@ -1141,7 +1158,7 @@ function runSelfTest(quiet){
       const c = CODECS.find(x => x.id === id);
       if(!c) return;
       resolutionsForCamera(cam, id).forEach(r => {
-        const rates = frameratesFor(c, r.w, r.h).filter(f => f !== 'custom');
+        const rates = frameratesFor(c, r).filter(f => f !== 'custom');
         if(!rates.length){ bad.push(cam.model+'/'+id+'/'+r.w+'x'+r.h+': no frame rate'); return; }
         rates.forEach(f => {
           const v = rateOf(c, r.w, r.h, f);
@@ -1195,6 +1212,24 @@ function runSelfTest(quiet){
     });
     return bad;
   });
+
+  check('codec ids named on a raster belong to that camera', () => {
+    const bad = [];
+    CAMERAS.forEach(cam => cam.resolutions.forEach(r => {
+      if(!r.codecs) return;
+      r.codecs.forEach(id => {
+        if(cam.codecs.indexOf(id) === -1)
+          bad.push(cam.model+' / '+r.name+' names '+id+', not in the camera codec list');
+      });
+    }));
+    return bad;
+  });
+
+  check('a raster naming codecs is reachable by at least one of them', () =>
+    CAMERAS.reduce((bad, cam) => bad.concat(cam.resolutions
+      .filter(r => r.codecs && !r.codecs.some(id =>
+        resolutionsForCamera(cam, id).some(x => x.w === r.w && x.h === r.h)))
+      .map(r => cam.model + ': ' + r.name)), []));
 
   check('no camera offers a frame rate below 1 or a zero-pixel raster', () =>
     CAMERAS.reduce((bad, cam) => bad.concat(

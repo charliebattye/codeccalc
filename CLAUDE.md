@@ -65,8 +65,31 @@ Four flags change behaviour, and are easy to miss:
 `CAMERAS` holds 22 models across ARRI, Blackmagic, Canon, DJI, GoPro,
 Panasonic, RED, and Sony. Each lists its native resolutions and a `codecs`
 array of **`CODECS` ids**. A typo in that array silently drops the option from
-the dropdown rather than failing loudly, so check a camera's codec list in the
-browser after editing it.
+the dropdown rather than failing loudly, so run the self-test after editing it.
+
+### Per-raster constraints
+
+A resolution may carry two optional fields, and a raster that has them is in
+effect a recording *mode*:
+
+- `codecs:[ids]` — the codecs this raster is actually offered with. Sony pair
+  them: the BURANO's 8632×4856 is X-OCN only, while XAVC H uses 7680×4320.
+  `resRange` scopes by pixel count alone and cannot express that.
+- `maxFps:n` or `fps:[…]` — what the camera shoots at this raster. Use `maxFps`
+  for a quoted range ("1–30 fps", how Sony write it) and `fps` for an
+  enumerated list (how GoPro write it).
+
+Both are optional, and absent means *not yet known* rather than unconstrained —
+which is why most cameras have neither. Add them only from a manufacturer
+source. The BURANO is the worked example: its six rasters are a transcription of
+Sony's Recording Formats poster, and its 8.6K modes correctly cap at 30 fps
+while its 6K reaches 60.
+
+This matters because manufacturers publish **modes**, not three independent
+axes. Every data bug found in the September 2026 audit came from that mismatch:
+the HERO13's 1080p has no 24 fps, the BURANO's 8.6K stops at 30, MISSION's Max
+exists at 1080p only at 480. None is expressible as resolution × codec × frame
+rate.
 
 ### Table-driven codecs
 
@@ -138,13 +161,14 @@ the URL, or call `runSelfTest()` from the browser console — useful where a
 preview pane rewrites the URL and drops the query string. `runSelfTest(true)`
 returns the results without drawing the panel.
 
-Ten checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
+Twelve checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
 codec carries the fields its rate model needs, that every codec id a camera
 names exists, that every resolution a camera lists is reachable, that every
 camera/codec pairing offers something, that every combination the DIT mode
 offers produces a usable figure, that published table figures round-trip
 exactly, that broadcast frame rates snap to their whole-number neighbour, and
-that every `rates` key matches a raster on a camera that uses that codec.
+that every `rates` key matches a raster on a camera that uses that codec, and
+that any codec named on a raster belongs to that camera and can reach it.
 
 They live inside `index.html` rather than a separate page because a browser will
 not let one `file://` document read another's data. A standalone checker would
@@ -157,7 +181,7 @@ sits *inside* the range a table codec covers but has no published figure.
 
 ## Before calling a change done
 
-- Run `runSelfTest()`. All ten checks must pass before anything else is worth
+- Run `runSelfTest()`. All twelve checks must pass before anything else is worth
   looking at.
 - Open `index.html` and exercise **both** modes.
 - Check the readout line, the four stat tiles, the storage total, and the
