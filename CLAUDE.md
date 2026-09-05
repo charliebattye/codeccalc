@@ -68,7 +68,7 @@ Four flags change behaviour, and are easy to miss:
   mode, so it restricts nothing in Stream mode.
 - `hint` shows a note beneath the readout.
 
-`CAMERAS` holds 22 models across ARRI, Blackmagic, Canon, DJI, GoPro,
+`CAMERAS` holds 23 models across ARRI, Blackmagic, Canon, DJI, GoPro,
 Panasonic, RED, and Sony. Each lists its native resolutions and a `codecs`
 array of **`CODECS` ids**. A typo in that array silently drops the option from
 the dropdown rather than failing loudly, so run the self-test after editing it.
@@ -155,12 +155,12 @@ its entry in `SOURCES`; there is no longer a separate paragraph to forget.
 
 ## Camera verification worklist
 
-Nine of twenty-two camera lists have been read from a manufacturer document.
+Ten of twenty-three camera lists have been read from a manufacturer document.
 `runSelfTest()` reports the count and names the rest on every run, so this
 section is the *how*, not the record — the data is the record.
 
-**Verified.** All six Sonys (FX6, FX3, FR7, A7S III, PXW-FS7 II, BURANO,
-VENICE 2) and both GoPros (HERO13 Black, MISSION 1 Pro).
+**Verified.** All eight Sonys (FX6, FX3, FR7, PXW-FX9, PXW-FS7 II, A7S III,
+BURANO, VENICE 2) and both GoPros (HERO13 Black, MISSION 1 Pro).
 
 **Remaining**, in the order worth doing:
 
