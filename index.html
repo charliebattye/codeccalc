@@ -294,16 +294,16 @@
 
       <div class="divider"></div>
       <p class="subgroup-label">Audio (linear PCM)</p>
-      <div class="row3">
+      <div class="row3" id="streamAudio">
         <div class="field">
           <label for="channels">Channels</label>
           <select id="channels">
             <option value="0">None</option>
             <option value="1">Mono</option>
-            <option value="2" selected>Stereo</option>
+            <option value="2">Stereo</option>
             <option value="4">4ch</option>
             <option value="8">8ch</option>
-            <option value="16">16ch</option>
+            <option value="16" selected>16ch</option>
           </select>
         </div>
         <div class="field">
@@ -317,6 +317,35 @@
         <div class="field">
           <label for="audioBits">Bit depth</label>
           <select id="audioBits">
+            <option value="16">16-bit</option>
+            <option value="24" selected>24-bit</option>
+            <option value="32">32-bit</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3" id="camAudio" style="display:none;">
+        <div class="field">
+          <label for="camChannels">Channels</label>
+          <select id="camChannels">
+            <option value="0">None</option>
+            <option value="1">Mono</option>
+            <option value="2" selected>Stereo</option>
+            <option value="4">4ch</option>
+            <option value="8">8ch</option>
+            <option value="16">16ch</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="camSampleRate">Sample rate</label>
+          <select id="camSampleRate">
+            <option value="48000" selected>48 kHz</option>
+            <option value="96000">96 kHz</option>
+            <option value="44100">44.1 kHz</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="camAudioBits">Bit depth</label>
+          <select id="camAudioBits">
             <option value="16">16-bit</option>
             <option value="24" selected>24-bit</option>
             <option value="32">32-bit</option>
@@ -1039,6 +1068,8 @@ function setMode(mode){
   document.getElementById('modeDitBtn').classList.toggle('active', mode==='dit');
   document.getElementById('streamFields').style.display = mode==='stream' ? 'block' : 'none';
   document.getElementById('ditFields').style.display = mode==='dit' ? 'block' : 'none';
+  document.getElementById('streamAudio').style.display = mode==='stream' ? 'grid' : 'none';
+  document.getElementById('camAudio').style.display = mode==='dit' ? 'grid' : 'none';
   document.getElementById('subhead').textContent = SUBHEADS[mode];
   document.getElementById('tableScroll').classList.toggle('v-capped', mode==='stream');
   render();
@@ -1065,6 +1096,16 @@ function getResolution(){
     return { w: parseFloat(document.getElementById('customW').value)||0, h: parseFloat(document.getElementById('customH').value)||0 };
   }
   return { w:r.w, h:r.h };
+}
+
+/* Each mode keeps its own audio settings: a DIT wrangling one camera and someone
+ * pricing a multitrack stream are answering different questions. */
+function getAudio(){
+  const dit = currentMode === 'dit';
+  const val = id => parseFloat(document.getElementById(id).value);
+  return { channels:   val(dit ? 'camChannels'   : 'channels'),
+           sampleRate: val(dit ? 'camSampleRate' : 'sampleRate'),
+           bits:       val(dit ? 'camAudioBits'  : 'audioBits') };
 }
 
 function getFps(){
@@ -1155,9 +1196,8 @@ function render(){
   const codec = getCodec();
   const { w, h } = getResolution();
   const fps = getFps();
-  const channels = parseFloat(document.getElementById('channels').value);
-  const sampleRate = parseFloat(document.getElementById('sampleRate').value);
-  const audioBits = parseFloat(document.getElementById('audioBits').value);
+  const audio = getAudio();
+  const channels = audio.channels, sampleRate = audio.sampleRate, audioBits = audio.bits;
   const streams = Math.max(1, parseInt(document.getElementById('streams').value)||1);
   const durH = parseFloat(document.getElementById('durH').value)||0;
   const durM = parseFloat(document.getElementById('durM').value)||0;
@@ -1254,10 +1294,12 @@ function codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio){
 [codecSel, resSel, fpsSel, document.getElementById('customW'), document.getElementById('customH'),
  document.getElementById('customFps'), document.getElementById('bitDepth'), document.getElementById('ratio'),
  document.getElementById('channels'), document.getElementById('sampleRate'), document.getElementById('audioBits'),
+ document.getElementById('camChannels'), document.getElementById('camSampleRate'), document.getElementById('camAudioBits'),
  document.getElementById('streams'), document.getElementById('durH'), document.getElementById('durM')
 ].forEach(el=> el.addEventListener('input', render));
 
 document.getElementById('tableScroll').classList.toggle('v-capped', currentMode==='stream');
+document.getElementById('camAudio').style.display = 'none';
 render();
 
 /* ---------- self-test -------------------------------------------------------
