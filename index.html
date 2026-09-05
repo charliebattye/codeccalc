@@ -417,7 +417,9 @@ const CODECS = [
   { group:'DNxHR', id:'dnxhr_hq', confidence:'exact', source:'dnxhr', name:'DNxHR HQ (8-bit)', type:'mezz', bpp:3.346 },
   { group:'DNxHR', id:'dnxhr_hqx', confidence:'exact', source:'dnxhr', name:'DNxHR HQX (10/12-bit)', type:'mezz', bpp:3.346 },
   { group:'DNxHR', id:'dnxhr_444', confidence:'exact', source:'dnxhr', name:'DNxHR 444 (12-bit RGB)', type:'mezz', bpp:6.692 },
-  { group:'XAVC', id:'xavc_i_c100', confidence:'exact', source:'xavc_intra', name:'XAVC-Intra Class 100 (HD/2K, 10-bit 4:2:2)', type:'mezz', bpp:1.677, resRange:[0,2300000], hint:'Class 100 is Sony\u2019s spec at 2048\u00d71080 (2K DCI). Pick that resolution for exact figures \u2014 1920\u00d71080 reads ~7% lower.' },
+  { group:'XAVC', id:'xavc_i_c100', confidence:'exact', source:'xavc_intra', name:'XAVC-Intra Class 100 (HD, 10-bit 4:2:2)', type:'table', resRange:[0,2300000],
+    hint:'Sony state these as maximum bit rates at 1920\u00d71080. XAVC-I HD is CBG, and 25p and 50p carry the same frame budget as 29.97p and 59.94p, so the PAL rates cost the same per second rather than less.',
+    rates:{ '1920x1080':{23.98:89, 25:112, 29.97:111, 50:223, 59.94:222} } },
   { group:'XAVC', id:'xavc_i_c300', confidence:'exact', source:'xavc_intra', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, resRange:[3000000,10000000], hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 300 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
   { group:'XAVC', id:'xavc_i_c480', confidence:'exact', source:'xavc_intra', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, resRange:[3000000,10000000], hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 480 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
   { group:'XAVC', id:'xavc_l_hd10', confidence:'exact', source:'xavc_l', name:'XAVC-L HD 50 (Long GOP, 10-bit 4:2:2)', type:'table',
@@ -572,11 +574,13 @@ const CAMERAS = [
       { name:'8K 16:9 — 7680×4320', w:7680, h:4320, maxFps:30, codecs:['xavc_h_i_hq','xavc_h_i_sq'] },
       { name:'8.6K Full-Frame 16:9 — 8632×4856', w:8632, h:4856, maxFps:30, codecs:['xocn_lt'] },
     ] },
-  { brand:'Sony', model:'FR7', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
+  { brand:'Sony', model:'FR7', source:'Sony ILME-FR7 published specification, recording formats and frame rates', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
     resolutions:[
-      { name:'4K DCI — 4096×2160', w:4096, h:2160 },
-      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
-      { name:'HD — 1920×1080', w:1920, h:1080 },
+      // Transcribed from Sony's ILME-FR7 specification. XAVC-L QFHD is 3840x2160
+      // only; DCI 4K is XAVC-I, and is the one raster offering 24p.
+      { name:'4K DCI — 4096×2160', w:4096, h:2160, fps:[23.98,24,25,29.97,50,59.94], codecs:['xavc_i_c300'] },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c300','xavc_l_4k'] },
+      { name:'HD — 1920×1080', w:1920, h:1080, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c100','xavc_l_hd10','xavc_l_hd8'] },
     ] },
   { brand:'Sony', model:'A7S III', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10'],
     resolutions:[
@@ -681,7 +685,7 @@ const codecLabel = c => c.name + (confidenceOf(c).tag ? ' (' + confidenceOf(c).t
 const SOURCES = {
   prores: "Apple's published target data rates. ProRes is constant bits per pixel, so the figures scale exactly with raster and frame rate; checked against Apple's table at both 1080p and UHD.",
   dnxhr: "Avid's published bandwidth specifications, verified against all fifty figures Avid publish — two rasters by five frame rates by five tiers — to within 0.84%. HQ and HQX share a bit rate by design: HQX buys 12-bit depth, not a larger file.",
-  xavc_intra: "Sony's XAVC operating-point tables. A class defines a coded-frame-size budget rather than a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K. Sony rate DCI and QFHD identically, so the wider raster reads about 7% high here — each entry's hint says so.",
+  xavc_intra: "Sony's published maximum bit rates. Class 300 is verified exactly against the FR7 specification at QFHD across all five frame rates, to within 0.1%. Class 100 is held as a table of Sony's stated HD figures rather than a per-pixel rate, because XAVC-I HD is CBG: 25p and 50p carry the same frame budget as 29.97p and 59.94p, which a per-pixel model read 22% low. A class defines a coded-frame-size budget rather than a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K. Sony rate DCI and QFHD identically, so the wider raster reads about 7% high here — each entry's hint says so.",
   xavc_l: "Sony's class bit rates, held in a per-mode table. XAVC-L is rated by class rather than by frame rate: the class name is the bit rate. Published card recording times for the FX6 and FX9 confirm the shape, quoting one time across 24/25/30p and another across 50/60p, which a frame-rate-proportional codec could not do.",
   raw_computed: "Computed from sensor bit depth × pixel count × frame rate ÷ compression ratio. Real-world RAW rates vary with image content, so these are planning estimates rather than guarantees — adjust the ratio slider if you have camera-specific figures. Blackmagic define their ratios against the unprocessed sensor frame, which is exactly this calculation.",
   uncompressed: "Arithmetic rather than specification: 10-bit 4:2:2 is 20 bits per pixel, 10-bit 4:4:4 RGB is 30. Exact by definition.",
@@ -1278,7 +1282,9 @@ function runSelfTest(quiet){
     CODECS.filter(c => c.type === 'table').forEach(c => {
       const rasters = new Set();
       CAMERAS.filter(cam => cam.codecs.indexOf(c.id) !== -1)
-             .forEach(cam => cam.resolutions.forEach(r => rasters.add(r.w+'x'+r.h)));
+             .forEach(cam => cam.resolutions.forEach(r => {
+               if(!r.codecs || r.codecs.indexOf(c.id) !== -1) rasters.add(r.w+'x'+r.h);
+             }));
       Object.keys(c.rates).forEach(k => {
         if(!rasters.has(k)) bad.push(c.id+': '+k+' matches no camera resolution');
       });
