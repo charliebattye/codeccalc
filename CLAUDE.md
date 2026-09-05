@@ -153,6 +153,54 @@ This replaced a hand-kept paragraph that had already drifted, describing a GoPro
 model that had been replaced two commits earlier. Change a figure and you change
 its entry in `SOURCES`; there is no longer a separate paragraph to forget.
 
+## Camera verification worklist
+
+Nine of twenty-two camera lists have been read from a manufacturer document.
+`runSelfTest()` reports the count and names the rest on every run, so this
+section is the *how*, not the record — the data is the record.
+
+**Verified.** All six Sonys (FX6, FX3, FR7, A7S III, PXW-FS7 II, BURANO,
+VENICE 2) and both GoPros (HERO13 Black, MISSION 1 Pro).
+
+**Remaining**, in the order worth doing:
+
+| Cameras | Where to look | Why first |
+|---|---|---|
+| Canon C300 III, C500 II | canon-europe.com spec page (403s automated fetches; opens in a browser) | Settles the XF-AVC Intra HD raster question — a live ~8% error — and covers both cameras |
+| Panasonic VariCam LT, EVA1 | EVA1 Recording Formats white paper on pro-av.panasonic.net | Settles the AVC-Intra 4K-422 / All-I 400 conflation (320 vs 400 Mb/s), and may let LongGOP 150 return |
+| ARRI Alexa 35, Mini LF, Mini | ARRI data-rate calculator and per-camera format lists | Three cameras, one source; the Alexa 35 has far more sensor modes than the six listed |
+| RED V-RAPTOR 8K VV, KOMODO-X | RED recording-time / R3D tables | Also confirms the REDCODE 8:1 default, currently unverified |
+| Blackmagic URSA Mini Pro 12K, Pocket 6K Pro | camera manuals, which carry full BRAW rate tables per ratio | Straight transcription |
+| DJI Inspire 3 | Zenmuse X9-8K Air specs | Straight transcription |
+| DJI Osmo Pocket 3 | nothing published | Needs measurement (file size ÷ duration), not a document. Last camera on a single bits-per-pixel anchor |
+
+### Do not pattern-match
+
+Four cameras diverged from what a neighbouring model implied, and each would
+have been wrong:
+
+- The **FX3** records the Alpha line, not the cinema line. Every codec it had
+  was the wrong one.
+- **XAVC S-I HD** is not **XAVC-I HD**: 93 against 112 at 25p, 185 against 223
+  at 50p.
+- The **A7S III** matches the FX3's tables exactly but has **no DCI 4K**.
+- The **PXW-FS7 II** is a third table again — VBR where the FX6 is CBG, so
+  50p is 185 rather than 223.
+
+Read each specification. The saving from assuming is minutes; the cost is a
+wrong figure someone books storage against.
+
+### Verifying one
+
+1. Find the recording-format table. Sony Cinema Line spec pages carry it;
+   Alpha spec pages are thinner and the figures live in the Help Guide instead.
+2. Transcribe the rasters, and for each its `codecs` and `maxFps` or `fps`.
+3. Add or correct codec entries where the camera's format is not already held,
+   with `confidence` and `source`.
+4. Set `source:` on the camera.
+5. Run `runSelfTest()`. All checks must pass.
+6. Commit naming the document.
+
 ## Publishing
 
 `main` is served by GitHub Pages, so pushing to `main` updates the tool's own
