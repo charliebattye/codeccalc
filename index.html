@@ -548,10 +548,14 @@ const CAMERAS = [
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
       { name:'HD — 1920×1080', w:1920, h:1080 },
     ] },
-  { brand:'Sony', model:'FX6', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10'],
+  { brand:'Sony', model:'FX6', source:'Sony ILME-FX6 published specification, recording formats and frame rates',
+    codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10','xavc_l_hd8'],
     resolutions:[
-      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
-      { name:'HD — 1920×1080', w:1920, h:1080 },
+      // Sony's FX6 recording formats are identical to the FR7's. XAVC-L QFHD is
+      // 3840x2160 only; DCI 4K is XAVC-I and the sole raster offering 24p.
+      { name:'4K DCI — 4096×2160', w:4096, h:2160, fps:[23.98,24,25,29.97,50,59.94], codecs:['xavc_i_c300'] },
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c300','xavc_l_4k'] },
+      { name:'HD — 1920×1080', w:1920, h:1080, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c100','xavc_l_hd10','xavc_l_hd8'] },
     ] },
   { brand:'Sony', model:'FX3', codecs:['xavc_i_c300','xavc_l_4k','xavc_l_hd10'],
     resolutions:[
