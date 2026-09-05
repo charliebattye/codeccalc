@@ -52,7 +52,13 @@ Do not "correct" it to 1024.
 
 Four flags change behaviour, and are easy to miss:
 
-- `approx:true` appends "(approx.)" to the codec name.
+- `confidence:'<band>'` says how far the figure can be trusted, and replaced the
+  old `approx:true`. The band's short tag is appended to the codec name and its
+  explanation appears beneath the readout. Bands are `exact` (manufacturer
+  figure, within ~1%), `verified` (checked against a source, within a few per
+  cent), `derived` (converted from card-capacity times, up to ~13%),
+  `estimated` (scaled from one data point) and `variable` (content-dependent).
+  Currently 20 exact, 3 verified, 4 derived, 10 estimated, 8 variable.
 - `ditOnly:true` hides the codec from Stream mode and from its comparison
   table. Sixteen entries use this: every camera-specific format lives in DIT
   mode, leaving Stream mode for codecs you can meaningfully compare across
@@ -164,7 +170,7 @@ the URL, or call `runSelfTest()` from the browser console — useful where a
 preview pane rewrites the URL and drops the query string. `runSelfTest(true)`
 returns the results without drawing the panel.
 
-Fourteen checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
+Fifteen checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
 codec carries the fields its rate model needs, that every codec id a camera
 names exists, that every resolution a camera lists is reachable, that every
 camera/codec pairing offers something, that every combination the DIT mode
@@ -172,7 +178,8 @@ offers produces a usable figure, that published table figures round-trip
 exactly, that broadcast frame rates snap to their whole-number neighbour, and
 that every `rates` key matches a raster on a camera that uses that codec, and
 that any codec named on a raster belongs to that camera and can reach it, and
-that every codec names a source that exists and every source is used.
+that every codec names a source and a confidence band that exist, and that
+every source is used.
 
 They live inside `index.html` rather than a separate page because a browser will
 not let one `file://` document read another's data. A standalone checker would
@@ -185,7 +192,7 @@ sits *inside* the range a table codec covers but has no published figure.
 
 ## Before calling a change done
 
-- Run `runSelfTest()`. All fourteen checks must pass before anything else is worth
+- Run `runSelfTest()`. All fifteen checks must pass before anything else is worth
   looking at.
 - Open `index.html` and exercise **both** modes.
 - Check the readout line, the four stat tiles, the storage total, and the
