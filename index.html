@@ -607,10 +607,13 @@ const CAMERAS = [
       { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c300','xavc_l_4k'] },
       { name:'HD — 1920×1080', w:1920, h:1080, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_i_c100','xavc_l_hd10','xavc_l_hd8'] },
     ] },
-  { brand:'Sony', model:'A7S III', codecs:['xavc_i_c300','xavc_i_c100','xavc_l_4k','xavc_l_hd10'],
+  { brand:'Sony', model:'A7S III', source:'Sony ILCE-7SM3 Help Guide, movie recording format table',
+    codecs:['xavc_s_i','xavc_s_4k','xavc_hs_4k','xavc_s_hd'],
     resolutions:[
-      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160 },
-      { name:'HD — 1920×1080', w:1920, h:1080 },
+      // Alpha line, and the 4:2:2 10-bit tables are identical to the FX3's. The
+      // difference is the raster list: the A7S III has no DCI 4K.
+      { name:'UHD 16:9 — 3840×2160', w:3840, h:2160, fps:[23.98,25,29.97,50,59.94,100,119.88], codecs:['xavc_s_i','xavc_s_4k','xavc_hs_4k'] },
+      { name:'HD — 1920×1080', w:1920, h:1080, fps:[23.98,25,29.97,50,59.94], codecs:['xavc_s_i','xavc_s_hd'] },
     ] },
   { brand:'Canon', model:'EOS C300 Mark III', codecs:['craw_light','xfavc_i','xfavc_i_hd'],
     resolutions:[
