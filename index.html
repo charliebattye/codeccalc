@@ -300,10 +300,10 @@
           <select id="channels">
             <option value="0">None</option>
             <option value="1">Mono</option>
-            <option value="2">Stereo</option>
+            <option value="2" selected>Stereo</option>
             <option value="4">4ch</option>
             <option value="8">8ch</option>
-            <option value="16" selected>16ch</option>
+            <option value="16">16ch</option>
           </select>
         </div>
         <div class="field">
@@ -818,8 +818,8 @@ CODECS.forEach(c=>{
   opt.textContent = codecLabel(c);
   groups[c.group].appendChild(opt);
 });
-// Stream Record opens on a broadcast-standard HD mode: an exact-confidence codec,
-// PAL frame rate, and a full 16-channel bed so the audio contribution is visible.
+// Stream Record opens on a broadcast-standard HD mode: an exact-confidence codec
+// at a PAL frame rate, with stereo audio.
 codecSel.value = 'xavc_i_c100';
 
 const resSel = document.getElementById('resolution');
