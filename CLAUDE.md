@@ -132,12 +132,15 @@ often the only published source for consumer cameras. But check the derived
 figure against any stated one: GoPro's MISSION table rounds every Max entry to
 "2Hrs", which implies 284 Mb/s where GoPro state a constant 240.
 
-**The page documents its own figures.** "Notes on the numbers", at the foot of
-`index.html`, records where each family's numbers come from and how far they
-can be trusted. It is part of the product, not a comment. Change a figure or a
-rate model and change its paragraph in the same commit, or the tool will
-describe itself inaccurately — worse in a provenance section than saying
-nothing at all.
+**The page documents its own figures, and does it from the data.** Every codec
+carries `source:'<key>'` into the `SOURCES` map, and "Notes on the numbers" at
+the foot of the page is generated from that at load. So a codec cannot be added
+without saying where its figure came from, and the page cannot describe a codec
+it no longer has — the self-test fails on an unknown key or an unused source.
+
+This replaced a hand-kept paragraph that had already drifted, describing a GoPro
+model that had been replaced two commits earlier. Change a figure and you change
+its entry in `SOURCES`; there is no longer a separate paragraph to forget.
 
 ## Publishing
 
@@ -161,14 +164,15 @@ the URL, or call `runSelfTest()` from the browser console — useful where a
 preview pane rewrites the URL and drops the query string. `runSelfTest(true)`
 returns the results without drawing the panel.
 
-Twelve checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
+Fourteen checks run against the live `CODECS` and `CAMERAS`: id uniqueness, that each
 codec carries the fields its rate model needs, that every codec id a camera
 names exists, that every resolution a camera lists is reachable, that every
 camera/codec pairing offers something, that every combination the DIT mode
 offers produces a usable figure, that published table figures round-trip
 exactly, that broadcast frame rates snap to their whole-number neighbour, and
 that every `rates` key matches a raster on a camera that uses that codec, and
-that any codec named on a raster belongs to that camera and can reach it.
+that any codec named on a raster belongs to that camera and can reach it, and
+that every codec names a source that exists and every source is used.
 
 They live inside `index.html` rather than a separate page because a browser will
 not let one `file://` document read another's data. A standalone checker would
@@ -181,7 +185,7 @@ sits *inside* the range a table codec covers but has no published figure.
 
 ## Before calling a change done
 
-- Run `runSelfTest()`. All twelve checks must pass before anything else is worth
+- Run `runSelfTest()`. All fourteen checks must pass before anything else is worth
   looking at.
 - Open `index.html` and exercise **both** modes.
 - Check the readout line, the four stat tiles, the storage total, and the

@@ -139,6 +139,9 @@
   .storage-band .value{ font-family:var(--font-mono); font-size:24px; font-weight:700; color:var(--amber); }
   .storage-band .value small{ font-size:13px; font-weight:500; color:var(--text-dim); margin-left:4px; }
 
+  footer .note-row{ margin-top:10px; }
+  footer .note-row b{ color:var(--text-dim); font-weight:500; }
+
   /* ---------- comparison table ---------- */
   .compare{ margin-top:20px; }
   .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px; }
@@ -397,53 +400,51 @@
     </div>
   </div>
 
-  <footer>
-    <b>Notes on the numbers.</b> ProRes and DNxHR figures use Apple's and Avid's published target data rates (constant, resolution/fps-scaled). XAVC-Intra Class 100/300/480 figures are derived from Sony's official XAVC operating-point tables (Class defines a coded-frame-size budget, not a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K variants). XAVC-L is rated by class rather than by frame rate — the class name is the bit rate — so those rows read from a per-mode table of Sony's class figures: 50 Mb/s for XAVC-L HD 50, 35 for HD 35, and 100 Mb/s at 24–30p stepping to 150 at 50–60p for XAVC-L 4K. Published card recording times for the FX6 and FX9 confirm the shape: one recording time is quoted across 24, 25 and 30p and another across 50 and 60p, where a frame-rate-proportional codec would differ at each. Modelling these as bits per pixel, as this tool previously did, read double the real figure at 60p. Sony X-OCN (LT/ST/XT) figures were originally estimated from Sony's published size relationships between the three flavors and ProRes 4444. They have since been checked against Sony's own VENICE and VENICE 2 file size calculator across the 8.6K 3:2, 8.2K 17:9 and 6K 3:2 sensor modes, and agree to within 0.5–2.6% — the residual being container overhead that Sony's total-data-rate figures include and these video-only figures don't. Sony set the X-OCN rate by sensor mode rather than output raster, so 3840×2160 and 4096×2160 record at the same rate while this tool scales by pixel count; the wider raster reads about 7% high. Canon Cinema RAW Light uses a compression ratio derived from a single official Canon data point (1 Gbps at 4096×2160, 25p, 12-bit). XF-AVC Intra is derived from Canon's published bitrate table. XF-AVC Long GOP has been withdrawn: it was averaged from two Canon data points that disagreed by over 30% (35 Mb/s at 50p against 24 Mb/s at 25p, same resolution), and since a Long-GOP bit rate does not scale with frame rate, one averaged figure could not have been right at more than a single operating point. It will return if Canon publish enough points to build a table. ProRes RAW and ProRes RAW HQ use estimated compression ratios (Apple doesn't publish these directly) — adjust the ratio slider if you have camera-specific figures. GoPro HERO13 Black figures are read from GoPro's own published SD card capacity table, converting each recording time on a 128 GB card into a bit rate, for both the Standard and High settings. They are per-mode figures rather than one bits-per-pixel value, because the camera's implied bits per pixel varies more than fivefold across its own modes: the encoder pins to a ceiling near 140 Mb/s at 5.3K60 and 4K120, and falls to about a third of that at 1080p30. Frame rates GoPro don't publish are interpolated between neighbouring published ones; anything outside that range reads as a dash rather than a scaled guess. GoPro state the HERO13's bit rate is highly variable with scene complexity, so treat these as static-scene estimates. DJI's Osmo Pocket 3 H.265 figure is still a single bits-per-pixel value scaled from DJI's own 130 Mb/s spec at 4K, because DJI publish no equivalent capacity table. It will read low at smaller rasters and lower frame rates for the same reason the GoPro entries once did — treat it as a rough estimate rather than a per-mode figure. Panasonic's AVC-Intra 4K-422 / All-I 400 figure is based on a Panasonic technical comparison stating both run "about 400 Mb/s" at 4K 30p (an earlier figure in the same document cites 320 Mb/s, so treat this as an approximate midpoint rather than an exact spec). Panasonic's LongGOP 150 has been withdrawn for the same reason as Canon's Long GOP entry: a single 150 Mb/s cap spread across every raster and frame rate as a per-pixel figure reads correctly at one operating point and wrongly at all the others. Sony's XAVC H-Intra HQ/SQ figures for the BURANO's 8K modes are derived from Sony's published 1200/800 Mb/s figures at 8K 30p. GoPro MISSION 1 Pro figures come from GoPro's published 256 GB card capacity table, split into the camera's three settings. Max is GoPro's stated constant 240 Mb/s rather than a figure derived from that table: the table rounds every Max entry to “2Hrs”, which would imply 284 Mb/s, so the stated spec is the better source. High and Standard are converted from the published times, with 8K High held to GoPro's stated 160 Mb/s ceiling. Those times are quoted only to the nearest half hour, so the shortest durations carry roughly ±13% uncertainty; the derived High ceiling of 162.5 Mb/s agreeing with GoPro's stated 160 to within 1.6% is the main check that the conversion is sound. Modes GoPro mark N/A, such as Max below 480 fps at 1080p, read as a dash rather than a substituted figure. GoPro Labs firmware can exceed these caps, which isn't modelled here. Uncompressed and RAW figures (ARRIRAW, REDCODE, Blackmagic RAW, CinemaDNG) are computed from sensor bit depth × pixel count × frame rate ÷ compression ratio — real-world RAW rates vary with image content, so treat these as planning estimates, not guarantees. H.264/H.265 rows are rough high-bitrate references for on-set proxy recording only, not camera-specific specs. In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes — high-frame-rate crop modes and windowed resolutions aren't included. Frame rates are scoped only for codecs with a published per-mode table, where the list narrows to the modes the manufacturer actually quotes; for bits-per-pixel and RAW codecs every frame rate is offered whether or not that camera reaches it, so check the camera's own specification before pricing an unusual one. Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB/TB (1 GB = 1000 MB), matching card and drive marketing capacities.
-  </footer>
+  <footer id="notes"></footer>
 
 </div>
 
 <script>
 const CODECS = [
-  { group:'ProRes', id:'prores_proxy', name:'ProRes 422 Proxy', type:'mezz', bpp:0.724 },
-  { group:'ProRes', id:'prores_lt', name:'ProRes 422 LT', type:'mezz', bpp:1.641 },
-  { group:'ProRes', id:'prores_422', name:'ProRes 422', type:'mezz', bpp:2.365 },
-  { group:'ProRes', id:'prores_hq', name:'ProRes 422 HQ', type:'mezz', bpp:3.541 },
-  { group:'ProRes', id:'prores_4444', name:'ProRes 4444', type:'mezz', bpp:5.310 },
-  { group:'ProRes', id:'prores_4444xq', name:'ProRes 4444 XQ', type:'mezz', bpp:8.046 },
-  { group:'DNxHR', id:'dnxhr_lb', name:'DNxHR LB', type:'mezz', bpp:0.688 },
-  { group:'DNxHR', id:'dnxhr_sq', name:'DNxHR SQ', type:'mezz', bpp:2.215 },
-  { group:'DNxHR', id:'dnxhr_hq', name:'DNxHR HQ (8-bit)', type:'mezz', bpp:3.346 },
-  { group:'DNxHR', id:'dnxhr_hqx', name:'DNxHR HQX (10/12-bit)', type:'mezz', bpp:3.346 },
-  { group:'DNxHR', id:'dnxhr_444', name:'DNxHR 444 (12-bit RGB)', type:'mezz', bpp:6.692 },
-  { group:'XAVC', id:'xavc_i_c100', name:'XAVC-Intra Class 100 (HD/2K, 10-bit 4:2:2)', type:'mezz', bpp:1.677, resRange:[0,2300000], hint:'Class 100 is Sony\u2019s spec at 2048\u00d71080 (2K DCI). Pick that resolution for exact figures \u2014 1920\u00d71080 reads ~7% lower.' },
-  { group:'XAVC', id:'xavc_i_c300', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, resRange:[3000000,10000000], hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 300 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
-  { group:'XAVC', id:'xavc_i_c480', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, resRange:[3000000,10000000], hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 480 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
-  { group:'XAVC', id:'xavc_l_hd10', name:'XAVC-L HD 50 (Long GOP, 10-bit 4:2:2)', type:'table', approx:true,
+  { group:'ProRes', id:'prores_proxy', source:'prores', name:'ProRes 422 Proxy', type:'mezz', bpp:0.724 },
+  { group:'ProRes', id:'prores_lt', source:'prores', name:'ProRes 422 LT', type:'mezz', bpp:1.641 },
+  { group:'ProRes', id:'prores_422', source:'prores', name:'ProRes 422', type:'mezz', bpp:2.365 },
+  { group:'ProRes', id:'prores_hq', source:'prores', name:'ProRes 422 HQ', type:'mezz', bpp:3.541 },
+  { group:'ProRes', id:'prores_4444', source:'prores', name:'ProRes 4444', type:'mezz', bpp:5.310 },
+  { group:'ProRes', id:'prores_4444xq', source:'prores', name:'ProRes 4444 XQ', type:'mezz', bpp:8.046 },
+  { group:'DNxHR', id:'dnxhr_lb', source:'dnxhr', name:'DNxHR LB', type:'mezz', bpp:0.688 },
+  { group:'DNxHR', id:'dnxhr_sq', source:'dnxhr', name:'DNxHR SQ', type:'mezz', bpp:2.215 },
+  { group:'DNxHR', id:'dnxhr_hq', source:'dnxhr', name:'DNxHR HQ (8-bit)', type:'mezz', bpp:3.346 },
+  { group:'DNxHR', id:'dnxhr_hqx', source:'dnxhr', name:'DNxHR HQX (10/12-bit)', type:'mezz', bpp:3.346 },
+  { group:'DNxHR', id:'dnxhr_444', source:'dnxhr', name:'DNxHR 444 (12-bit RGB)', type:'mezz', bpp:6.692 },
+  { group:'XAVC', id:'xavc_i_c100', source:'xavc_intra', name:'XAVC-Intra Class 100 (HD/2K, 10-bit 4:2:2)', type:'mezz', bpp:1.677, resRange:[0,2300000], hint:'Class 100 is Sony\u2019s spec at 2048\u00d71080 (2K DCI). Pick that resolution for exact figures \u2014 1920\u00d71080 reads ~7% lower.' },
+  { group:'XAVC', id:'xavc_i_c300', source:'xavc_intra', name:'XAVC-Intra Class 300 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.207, resRange:[3000000,10000000], hint:'Class 300 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 300 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
+  { group:'XAVC', id:'xavc_i_c480', source:'xavc_intra', name:'XAVC-Intra Class 480 (4K/QFHD, 10-bit 4:2:2)', type:'mezz', bpp:1.930, resRange:[3000000,10000000], hint:'Class 480 is Sony\u2019s spec at 3840\u00d72160 (UHD), and Sony rates 4096\u00d72160 DCI at the same 480 Mb/s. Pick UHD for exact figures \u2014 DCI reads ~7% high.' },
+  { group:'XAVC', id:'xavc_l_hd10', source:'xavc_l', name:'XAVC-L HD 50 (Long GOP, 10-bit 4:2:2)', type:'table', approx:true,
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
     rates:{ '1920x1080':{24:50, 25:50, 30:50, 48:50, 50:50, 60:50} } },
-  { group:'XAVC', id:'xavc_l_hd8', name:'XAVC-L HD 35 (Long GOP, 8-bit 4:2:0)', type:'table', approx:true,
+  { group:'XAVC', id:'xavc_l_hd8', source:'xavc_l', name:'XAVC-L HD 35 (Long GOP, 8-bit 4:2:0)', type:'table', approx:true,
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
     rates:{ '1920x1080':{24:35, 25:35, 30:35, 48:35, 50:35, 60:35} } },
-  { group:'XAVC', id:'xavc_l_4k', name:'XAVC-L 4K / QFHD (Long GOP, 8-bit 4:2:0)', type:'table', approx:true,
+  { group:'XAVC', id:'xavc_l_4k', source:'xavc_l', name:'XAVC-L 4K / QFHD (Long GOP, 8-bit 4:2:0)', type:'table', approx:true,
     hint:'Sony rate XAVC-L by class, not by frame rate: the class name is the bit rate. Figures are Sony\u2019s class rates, cross-checked against published card recording times.',
     rates:{ '4096x2160':{24:100, 25:100, 30:100, 48:150, 50:150, 60:150},
             '3840x2160':{24:100, 25:100, 30:100, 48:150, 50:150, 60:150} } },
-  { group:'RAW', id:'arriraw', name:'ARRIRAW (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
-  { group:'RAW', id:'redcode', name:'REDCODE RAW', type:'raw', bitDepth:16, ratio:8, presets:[3,5,8,12,18] },
-  { group:'RAW', id:'braw', name:'Blackmagic RAW', type:'raw', bitDepth:12, ratio:5, presets:[3,5,8,12] },
-  { group:'RAW', id:'dng_lossless', name:'CinemaDNG (lossless comp.)', type:'raw', bitDepth:12, ratio:2, presets:[1.8,2,2.2] },
-  { group:'RAW', id:'dng_uncompressed', name:'CinemaDNG (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
-  { group:'Uncompressed', id:'uncomp_422', name:'Uncompressed 4:2:2 (10-bit)', type:'mezz', bpp:20 },
-  { group:'Uncompressed', id:'uncomp_444', name:'Uncompressed 4:4:4 RGB (10-bit)', type:'mezz', bpp:30 },
-  { group:'Proxy / delivery', id:'h264', name:'H.264 (high-bitrate proxy)', type:'mezz', bpp:0.15, approx:true },
-  { group:'Proxy / delivery', id:'h265', name:'H.265 / HEVC (high-bitrate proxy)', type:'mezz', bpp:0.08, approx:true },
-  { group:'Sony X-OCN', id:'xocn_lt', name:'Sony X-OCN LT', type:'mezz', bpp:1.770, approx:true, resRange:[3000000,60000000], hint:'Sony sets the X-OCN rate by sensor mode, not output raster \u2014 3840\u00d72160 and 4096\u00d72160 record at the same rate, so the wider raster reads ~7% high here.', ditOnly:true },
-  { group:'Sony X-OCN', id:'xocn_st', name:'Sony X-OCN ST', type:'mezz', bpp:3.098, approx:true, resRange:[3000000,60000000], hint:'Sony sets the X-OCN rate by sensor mode, not output raster \u2014 3840\u00d72160 and 4096\u00d72160 record at the same rate, so the wider raster reads ~7% high here.', ditOnly:true },
-  { group:'Sony X-OCN', id:'xocn_xt', name:'Sony X-OCN XT', type:'mezz', bpp:4.425, approx:true, resRange:[3000000,60000000], hint:'Sony sets the X-OCN rate by sensor mode, not output raster \u2014 3840\u00d72160 and 4096\u00d72160 record at the same rate, so the wider raster reads ~7% high here.', ditOnly:true },
-  { group:'Canon', id:'craw_light', name:'Canon Cinema RAW Light', type:'raw', bitDepth:12, ratio:2.65, presets:[2,2.65,3.5], ditOnly:true },
-  { group:'Canon', id:'xfavc_i', name:'Canon XF-AVC Intra 4K/UHD (4:2:2 10-bit)', type:'mezz', bpp:1.965, resRange:[3000000,10000000], approx:true, ditOnly:true },
-  { group:'Canon', id:'xfavc_i_hd', name:'Canon XF-AVC Intra HD (4:2:2 10-bit)', type:'mezz', bpp:2.848, resRange:[0,2300000], approx:true, ditOnly:true },
+  { group:'RAW', id:'arriraw', source:'raw_computed', name:'ARRIRAW (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
+  { group:'RAW', id:'redcode', source:'raw_computed', name:'REDCODE RAW', type:'raw', bitDepth:16, ratio:8, presets:[3,5,8,12,18] },
+  { group:'RAW', id:'braw', source:'raw_computed', name:'Blackmagic RAW', type:'raw', bitDepth:12, ratio:5, presets:[3,5,8,12] },
+  { group:'RAW', id:'dng_lossless', source:'raw_computed', name:'CinemaDNG (lossless comp.)', type:'raw', bitDepth:12, ratio:2, presets:[1.8,2,2.2] },
+  { group:'RAW', id:'dng_uncompressed', source:'raw_computed', name:'CinemaDNG (uncompressed)', type:'raw', bitDepth:12, ratio:1, ratioLocked:true },
+  { group:'Uncompressed', id:'uncomp_422', source:'uncompressed', name:'Uncompressed 4:2:2 (10-bit)', type:'mezz', bpp:20 },
+  { group:'Uncompressed', id:'uncomp_444', source:'uncompressed', name:'Uncompressed 4:4:4 RGB (10-bit)', type:'mezz', bpp:30 },
+  { group:'Proxy / delivery', id:'h264', source:'proxy', name:'H.264 (high-bitrate proxy)', type:'mezz', bpp:0.15, approx:true },
+  { group:'Proxy / delivery', id:'h265', source:'proxy', name:'H.265 / HEVC (high-bitrate proxy)', type:'mezz', bpp:0.08, approx:true },
+  { group:'Sony X-OCN', id:'xocn_lt', source:'xocn', name:'Sony X-OCN LT', type:'mezz', bpp:1.770, approx:true, resRange:[3000000,60000000], hint:'Sony sets the X-OCN rate by sensor mode, not output raster \u2014 3840\u00d72160 and 4096\u00d72160 record at the same rate, so the wider raster reads ~7% high here.', ditOnly:true },
+  { group:'Sony X-OCN', id:'xocn_st', source:'xocn', name:'Sony X-OCN ST', type:'mezz', bpp:3.098, approx:true, resRange:[3000000,60000000], hint:'Sony sets the X-OCN rate by sensor mode, not output raster \u2014 3840\u00d72160 and 4096\u00d72160 record at the same rate, so the wider raster reads ~7% high here.', ditOnly:true },
+  { group:'Sony X-OCN', id:'xocn_xt', source:'xocn', name:'Sony X-OCN XT', type:'mezz', bpp:4.425, approx:true, resRange:[3000000,60000000], hint:'Sony sets the X-OCN rate by sensor mode, not output raster \u2014 3840\u00d72160 and 4096\u00d72160 record at the same rate, so the wider raster reads ~7% high here.', ditOnly:true },
+  { group:'Canon', id:'craw_light', source:'canon_rawlight', name:'Canon Cinema RAW Light', type:'raw', bitDepth:12, ratio:2.65, presets:[2,2.65,3.5], ditOnly:true },
+  { group:'Canon', id:'xfavc_i', source:'canon_xfavc_intra', name:'Canon XF-AVC Intra 4K/UHD (4:2:2 10-bit)', type:'mezz', bpp:1.965, resRange:[3000000,10000000], approx:true, ditOnly:true },
+  { group:'Canon', id:'xfavc_i_hd', source:'canon_xfavc_intra', name:'Canon XF-AVC Intra HD (4:2:2 10-bit)', type:'mezz', bpp:2.848, resRange:[0,2300000], approx:true, ditOnly:true },
   // Withdrawn until there is a second published data point to model them from.
   // Both are Long-GOP codecs, and the FX6/FX9 card-recording tables showed that a
   // Long-GOP bit rate does not scale with frame rate: modelling one from a single
@@ -451,42 +452,42 @@ const CODECS = [
   // Panasonic publish enough points to build a rates table, so the honest position is
   // to offer nothing rather than a number that looks computed.
   // { group:'Canon', id:'xfavc_l', name:'Canon XF-AVC Long GOP (4:2:0 8-bit)', type:'mezz', bpp:0.375, resRange:[0,2300000], approx:true, ditOnly:true },
-  { group:'RAW', id:'prores_raw', name:'ProRes RAW', type:'raw', bitDepth:12, ratio:3, presets:[2,3,4], ditOnly:true },
-  { group:'RAW', id:'prores_raw_hq', name:'ProRes RAW HQ', type:'raw', bitDepth:12, ratio:2, presets:[1.5,2,2.5], ditOnly:true },
-  { group:'RAW', id:'cinedng_16', name:'CinemaDNG (16-bit, uncompressed)', type:'raw', bitDepth:16, ratio:1, ratioLocked:true, ditOnly:true },
-  { group:'GoPro', id:'gopro_h265_std', name:'GoPro H.265 (Standard bit rate)', type:'table', approx:true, ditOnly:true,
+  { group:'RAW', id:'prores_raw', source:'prores_raw', name:'ProRes RAW', type:'raw', bitDepth:12, ratio:3, presets:[2,3,4], ditOnly:true },
+  { group:'RAW', id:'prores_raw_hq', source:'prores_raw', name:'ProRes RAW HQ', type:'raw', bitDepth:12, ratio:2, presets:[1.5,2,2.5], ditOnly:true },
+  { group:'RAW', id:'cinedng_16', source:'raw_computed', name:'CinemaDNG (16-bit, uncompressed)', type:'raw', bitDepth:16, ratio:1, ratioLocked:true, ditOnly:true },
+  { group:'GoPro', id:'gopro_h265_std', source:'gopro_hero13', name:'GoPro H.265 (Standard bit rate)', type:'table', approx:true, ditOnly:true,
     hint:'GoPro\u2019s published card-capacity figures for a static scene. Real bit rate varies greatly with scene complexity.',
     rates:{ '5120x2880':{24:58.6, 30:64.2, 60:71.1},
             '3840x2160':{24:36.1, 30:53.0, 60:65.4, 120:89.4},
             '2704x1520':{240:84.1},
             '1920x1080':{30:24.8, 60:37.2, 120:55.8, 240:76.5} } },
-  { group:'GoPro', id:'gopro_h265_high', name:'GoPro H.265 (High bit rate)', type:'table', approx:true, ditOnly:true,
+  { group:'GoPro', id:'gopro_h265_high', source:'gopro_hero13', name:'GoPro H.265 (High bit rate)', type:'table', approx:true, ditOnly:true,
     hint:'GoPro\u2019s published card-capacity figures for a static scene. Real bit rate varies greatly with scene complexity.',
     rates:{ '5120x2880':{24:137.6, 30:137.6, 60:138.8},
             '3840x2160':{24:86.6, 30:103.4, 60:138.8, 120:139.9},
             '2704x1520':{240:139.9},
             '1920x1080':{30:47.3, 60:76.5, 120:106.7, 240:138.8} } },
-  { group:'GoPro', id:'gopro_mission_max', name:'GoPro MISSION H.265 (Max bit rate)', type:'table', ditOnly:true,
+  { group:'GoPro', id:'gopro_mission_max', source:'gopro_mission', name:'GoPro MISSION H.265 (Max bit rate)', type:'table', ditOnly:true,
     hint:'GoPro specify Max as a constant 240 Mb/s. It is not offered on every mode \u2014 modes without it read as \u2014 rather than a substituted figure.',
     rates:{ '7680x5760':{24:240, 30:240},
             '7680x4320':{30:240, 60:240},
             '3840x2160':{30:240, 60:240, 120:240, 240:240},
             '1920x1080':{480:240} } },
-  { group:'GoPro', id:'gopro_mission_high', name:'GoPro MISSION H.265 (High bit rate)', type:'table', approx:true, ditOnly:true,
+  { group:'GoPro', id:'gopro_mission_high', source:'gopro_mission', name:'GoPro MISSION H.265 (High bit rate)', type:'table', approx:true, ditOnly:true,
     hint:'Derived from GoPro\u2019s published 256 GB card-capacity table for a static scene. MISSION uses constant-quality encoding, so real bit rate varies with the scene.',
     rates:{ '7680x5760':{24:160.0, 30:160.0},
             '7680x4320':{30:160.0, 60:160.0},
             '3840x2160':{30:113.8, 60:142.2, 120:142.2, 240:142.2},
             '1920x1080':{24:51.7, 30:51.7, 60:81.3, 120:113.8, 240:142.2, 480:142.2} } },
-  { group:'GoPro', id:'gopro_mission_std', name:'GoPro MISSION H.265 (Standard bit rate)', type:'table', approx:true, ditOnly:true,
+  { group:'GoPro', id:'gopro_mission_std', source:'gopro_mission', name:'GoPro MISSION H.265 (Standard bit rate)', type:'table', approx:true, ditOnly:true,
     hint:'Derived from GoPro\u2019s published 256 GB card-capacity table for a static scene. MISSION uses constant-quality encoding, so real bit rate varies with the scene.',
     rates:{ '7680x5760':{24:103.4, 30:103.4},
             '7680x4320':{30:103.4, 60:126.4},
             '3840x2160':{30:56.9, 60:71.1, 120:94.8, 240:94.8},
             '1920x1080':{24:29.2, 30:29.2, 60:40.6, 120:59.9, 240:81.3, 480:94.8} } },
-  { group:'DJI', id:'dji_osmo_h265', name:'DJI H.265 (Osmo, standard bitrate)', type:'mezz', bpp:0.261, approx:true, ditOnly:true },
-  { group:'AVC-Intra', id:'avc_intra_4k422', name:'AVC-Intra 4K-422 / All-I 400 (10-bit 4:2:2)', type:'mezz', bpp:1.507, resRange:[3000000,10000000], approx:true },
-  { group:'AVC-Intra', id:'avc_intra100', name:'AVC-Intra 100 (HD, 10-bit 4:2:2)', type:'mezz', bpp:1.609, resRange:[0,2300000] },
+  { group:'DJI', id:'dji_osmo_h265', source:'dji_osmo', name:'DJI H.265 (Osmo, standard bitrate)', type:'mezz', bpp:0.261, approx:true, ditOnly:true },
+  { group:'AVC-Intra', id:'avc_intra_4k422', source:'avc_intra', name:'AVC-Intra 4K-422 / All-I 400 (10-bit 4:2:2)', type:'mezz', bpp:1.507, resRange:[3000000,10000000], approx:true },
+  { group:'AVC-Intra', id:'avc_intra100', source:'avc_intra', name:'AVC-Intra 100 (HD, 10-bit 4:2:2)', type:'mezz', bpp:1.609, resRange:[0,2300000] },
   // Withdrawn until there is a second published data point to model them from.
   // Both are Long-GOP codecs, and the FX6/FX9 card-recording tables showed that a
   // Long-GOP bit rate does not scale with frame rate: modelling one from a single
@@ -494,8 +495,8 @@ const CODECS = [
   // Panasonic publish enough points to build a rates table, so the honest position is
   // to offer nothing rather than a number that looks computed.
   // { group:'Long GOP', id:'panasonic_longgop150', name:'Panasonic LongGOP 150 (10-bit 4:2:2)', type:'mezz', bpp:0.565, resRange:[3000000,10000000], approx:true },
-  { group:'XAVC H', id:'xavc_h_i_hq', name:'XAVC H-Intra HQ (8K, H.265)', type:'mezz', bpp:1.206, resRange:[30000000,60000000], approx:true },
-  { group:'XAVC H', id:'xavc_h_i_sq', name:'XAVC H-Intra SQ (8K, H.265)', type:'mezz', bpp:0.804, resRange:[30000000,60000000], approx:true },
+  { group:'XAVC H', id:'xavc_h_i_hq', source:'xavc_h', name:'XAVC H-Intra HQ (8K, H.265)', type:'mezz', bpp:1.206, resRange:[30000000,60000000], approx:true },
+  { group:'XAVC H', id:'xavc_h_i_sq', source:'xavc_h', name:'XAVC H-Intra SQ (8K, H.265)', type:'mezz', bpp:0.804, resRange:[30000000,60000000], approx:true },
 ];
 
 const CAMERAS = [
@@ -1096,6 +1097,60 @@ function codecMbpsForCompare(c,w,h,fps,selectedId,liveBitDepth,liveRatio){
 document.getElementById('tableScroll').classList.toggle('v-capped', currentMode==='stream');
 render();
 
+/* ---------- provenance ------------------------------------------------------
+ * Where each figure comes from. "Notes on the numbers" is generated from this
+ * at load, so the page cannot describe a codec it no longer has, and a codec
+ * cannot be added without saying where its number came from. The old hand-kept
+ * paragraph had already drifted once, describing a GoPro model that had been
+ * replaced.
+ *
+ * Each codec carries source:'<key>'. The self-test fails on an unknown key.
+ */
+const SOURCES = {
+  prores: "Apple's published target data rates. ProRes is constant bits per pixel, so the figures scale exactly with raster and frame rate; checked against Apple's table at both 1080p and UHD.",
+  dnxhr: "Avid's published bandwidth specifications, verified against all fifty figures Avid publish — two rasters by five frame rates by five tiers — to within 0.84%. HQ and HQX share a bit rate by design: HQX buys 12-bit depth, not a larger file.",
+  xavc_intra: "Sony's XAVC operating-point tables. A class defines a coded-frame-size budget rather than a literal resolution, so the same class is reused across HD/2K or 4K/QFHD/DCI4K. Sony rate DCI and QFHD identically, so the wider raster reads about 7% high here — each entry's hint says so.",
+  xavc_l: "Sony's class bit rates, held in a per-mode table. XAVC-L is rated by class rather than by frame rate: the class name is the bit rate. Published card recording times for the FX6 and FX9 confirm the shape, quoting one time across 24/25/30p and another across 50/60p, which a frame-rate-proportional codec could not do.",
+  raw_computed: "Computed from sensor bit depth × pixel count × frame rate ÷ compression ratio. Real-world RAW rates vary with image content, so these are planning estimates rather than guarantees — adjust the ratio slider if you have camera-specific figures. Blackmagic define their ratios against the unprocessed sensor frame, which is exactly this calculation.",
+  uncompressed: "Arithmetic rather than specification: 10-bit 4:2:2 is 20 bits per pixel, 10-bit 4:4:4 RGB is 30. Exact by definition.",
+  proxy: "Rough high-bitrate references for on-set proxy recording, not camera-specific specifications. There is no published figure to check these against, and none is claimed.",
+  xocn: "Originally estimated from Sony's published size relationships between the three flavours and ProRes 4444, and since checked against Sony's own VENICE and VENICE 2 file size calculator across the 8.6K 3:2, 8.2K 17:9 and 6K 3:2 sensor modes, agreeing to within 0.5–2.6%. The residual is container overhead that Sony's totals include and these video-only figures do not. Sony set the X-OCN rate by sensor mode rather than output raster.",
+  canon_rawlight: "A compression ratio derived from a single official Canon data point: 1 Gbps at 4096×2160, 25p, 12-bit.",
+  canon_xfavc_intra: "Canon's published bitrate table. The HD entry is calibrated at 2048×1080 and reads about 8% low at 1920×1080; whether Canon quote that figure at the DCI or the broadcast raster is still unconfirmed.",
+  prores_raw: "Estimated compression ratios — Apple do not publish these directly. Adjust the ratio slider if you have camera-specific figures.",
+  gopro_hero13: "Converted from GoPro's published SD card capacity table for a 128 GB card, as a figure per mode for both the Standard and High settings. One bits-per-pixel value cannot fit: the camera's implied figure spans 0.141 to 0.760 across its own modes, pinning near 140 Mb/s at 5.3K60 and falling to a third of that at 1080p30. GoPro state the bit rate varies greatly with scene complexity, so treat these as static-scene estimates.",
+  gopro_mission: "Converted from GoPro's published 256 GB card capacity table, split into the camera's three settings. Max is GoPro's stated constant 240 Mb/s rather than a derived figure, because the table rounds every Max entry to “2Hrs” and would imply 284. High and Standard come from the published times, with 8K High held to GoPro's stated 160 Mb/s ceiling. Those times are quoted only to the nearest half hour, so the shortest carry roughly ±13%.",
+  dji_osmo: "A single bits-per-pixel value scaled from DJI's own 130 Mb/s specification at 4K, because DJI publish no equivalent capacity table. It will read low at smaller rasters and lower frame rates — a rough estimate rather than a per-mode figure, and the last camera-specific codec still modelled this way.",
+  avc_intra: "Panasonic state that AVC-Intra 4K-422 and All-I 400 both run at about 400 Mb/s at 4K 30p, while an earlier figure in the same document cites 320. The entry is an approximate midpoint rather than an exact specification, and arguably conflates two codecs that should be listed separately.",
+  xavc_h: "Derived from Sony's published 1200 and 800 Mb/s figures at 8K 30p — a single data point each."
+};
+
+const NOTES_PREAMBLE =
+  "Every figure below is either taken from a manufacturer specification or marked as an estimate, with its origin stated. Entries labelled (approx.) are the ones to treat with the most care.";
+
+const NOTES_POSTAMBLE = [
+  "Canon's XF-AVC Long GOP and Panasonic's LongGOP 150 have been withdrawn. Both were Long-GOP codecs modelled from a single bits-per-pixel anchor, and a Long-GOP bit rate does not scale with frame rate, so one averaged figure could not be right at more than a single operating point. They return if either manufacturer publishes enough points to build a table.",
+  "In DIT / Data Wrangle mode, each camera's codec and resolution lists are a curated set of its main shooting modes, not the full permutation table a manufacturer publishes. Frame rates are scoped where a manufacturer publishes a per-mode table, or where the camera's own recording formats state a limit; elsewhere every frame rate is offered whether or not that camera reaches it, so check the camera's specification before pricing an unusual one.",
+  "Audio assumes uncompressed linear PCM per stream. Storage figures use decimal GB and TB (1 GB = 1000 MB), matching the capacities cards and drives are sold at."
+];
+
+function renderNotes(){
+  const el = document.getElementById('notes');
+  if(!el) return;
+  const order = [], bySource = {};
+  CODECS.forEach(c => {
+    if(!bySource[c.source]){ bySource[c.source] = []; order.push(c.source); }
+    bySource[c.source].push(c.name);
+  });
+  el.innerHTML =
+    '<b>Notes on the numbers.</b> ' + NOTES_PREAMBLE
+    + order.map(k =>
+        '<div class="note-row"><b>' + bySource[k].join(' · ') + '</b><br>'
+        + (SOURCES[k] || 'No source recorded.') + '</div>').join('')
+    + NOTES_POSTAMBLE.map(t => '<div class="note-row">' + t + '</div>').join('');
+}
+renderNotes();
+
 /* ---------- self-test -------------------------------------------------------
  * Open this file with ?selftest on the end of the URL to run the data checks.
  * Inert otherwise, so the shipped tool is untouched.
@@ -1211,6 +1266,16 @@ function runSelfTest(quiet){
       });
     });
     return bad;
+  });
+
+  check('every codec names a source that exists', () =>
+    CODECS.filter(c => !c.source || !SOURCES[c.source])
+          .map(c => c.id + ' -> ' + (c.source || 'no source')));
+
+  check('every source is used by at least one codec', () => {
+    const used = new Set(CODECS.map(c => c.source));
+    return Object.keys(SOURCES).filter(k => !used.has(k))
+                 .map(k => k + ' is documented but unused');
   });
 
   check('codec ids named on a raster belong to that camera', () => {
